@@ -299,7 +299,7 @@ class CodeController {
             // Calculate the range for distribution (50 to 60 percent of t)
             const distributionRange = Math.floor(Math.random() * (60 - 50 + 1) + 50) / 100;
             const distributionAmount = Math.floor(t * distributionRange);
-            console.log(distributionAmount,"disamt");
+            console.log(`distributionAmount`,"disamt");
             
             // Distribute the amount randomly among the objects
             slots.forEach(obj => {
@@ -1063,13 +1063,18 @@ class CodeController {
                 commonController.successMessage(token, "User Login successfully", res);
             } else {
                 console.log("User not found");
+               var sql = `select * from SegPercentages`;
+        var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
+                console.log(data[0].percentage,"first parameter");
+                
                 const segmentPercentages: { [key: number]: number } = {
-                    1: 40,
-                    2: 40,
-                    3: 10,
+                    1: data[0].percentage,
+                    2: data[1].percentage,
+                    3: data[2].percentage,
                 };
                 const selectedValue = this.calculateSegmentBasedOnPercentage(segmentPercentages);
-
+                  console.log(selectedValue,"here selected value");
+                  
                 const str = Math.random().toString(36).substr(2, 6).toUpperCase();
                 const userId = `ARL${str}`;
 
