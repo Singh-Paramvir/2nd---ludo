@@ -12,6 +12,8 @@ first:number;
 second:number;
 third:number;
 fourth:number;
+totalPlay:number;
+timeToPlay:number;
 
 }
 module.exports = (sequelize:any, DataTypes:any) => {
@@ -26,6 +28,8 @@ module.exports = (sequelize:any, DataTypes:any) => {
 second!:number;
 third!:number;
 fourth!:number;
+totalPlay!:number;
+timeToPlay!:number;
 
     
     /**
@@ -46,7 +50,9 @@ fourth!:number;
     first:{type:DataTypes.INTEGER},
     second:{type:DataTypes.INTEGER},
     third:{type:DataTypes.INTEGER},
-    fourth:{type:DataTypes.INTEGER}
+    fourth:{type:DataTypes.INTEGER},
+    totalPlay:{type:DataTypes.INTEGER},
+    timeToPlay:{type:DataTypes.INTEGER}
 
    
  

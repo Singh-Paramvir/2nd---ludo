@@ -44,7 +44,7 @@ class AdminCodeController {
         }
     }
     async updateSlotes(payload: any, res: Response) {
-        const { rupees, players, time, id, first, second, third, fourth } = payload;
+        const { rupees, players, time, id, first, second, third, fourth,totalPlay,timeToPlay } = payload;
         console.log(payload, "payload");
 
         try {
@@ -54,7 +54,7 @@ class AdminCodeController {
                 }
             })
             if (aa) {
-                await aa.update({ rupees, players, time, first, second, third, fourth })
+                await aa.update({ rupees, players, time, first, second, third, fourth,totalPlay,timeToPlay })
                 commonController.successMessage(aa, "Slotes Update Successfully", res)
             } else {
                 commonController.errorMessage("Data Not Found", res)
@@ -87,51 +87,49 @@ class AdminCodeController {
             console.log(payload, "pay");
 
             if (buttonValue == 0) {
-                let addSlote = await db.Users.findAll({});
+                const today = `
+                SELECT
+                u.*,
+                COUNT(DISTINCT aa_show.id) AS show_count,
+                COUNT(DISTINCT aa_click.id) AS click_count
+              FROM Users u
+              LEFT JOIN AddAnalists aa_show ON u.id = aa_show.userId AND aa_show.show = 1
+              LEFT JOIN AddAnalists aa_click ON u.id = aa_click.userId and aa_click.click = 1
+              GROUP BY u.id
+              ORDER BY u.id DESC;
+              `;
+              console.log(today);
+              
+                   const addSlote = await MyQuery.query(today, { type: QueryTypes.SELECT });
+                // let addSlote = await db.Users.findAll({});
                 console.log(addSlote.length, "length here");
 
-                for (let i = 0; i < addSlote.length; i++) {
-                    const today = `SELECT COUNT(*) AS show_count FROM AddAnalists WHERE \`show\` = 1 and userId = ${addSlote[i].id};`;
-                    const showCount = await MyQuery.query(today, { type: QueryTypes.SELECT });
-
-                    const today1 = `SELECT COUNT(*) AS click_count FROM AddAnalists WHERE \`click\` = 1 and userId = ${addSlote[i].id};`;
-                    const clickCount = await MyQuery.query(today1, { type: QueryTypes.SELECT });
-
-
-                    // Add the show_count to the dataValues object of each element
-                    addSlote[i].dataValues.show_count = showCount[0].show_count;
-                    addSlote[i].dataValues.click_count = clickCount[0].click_count;
-                }
+               
                 console.log("yes");
                 
-                var sql = `SELECT COUNT(*) AS total FROM Users ;`;
+                var sql = `SELECT COUNT(*) AS total FROM Users`;
                 var data1 = await MyQuery.query(sql, { type: QueryTypes.SELECT });
                 console.log("yes",data1);
-                var sql = `SELECT COUNT(*) AS total FROM Users WHERE DATE(createdAt) = CURDATE();`;
+                var sql = `SELECT COUNT(*) AS total FROM Users WHERE DATE(createdAt) = CURDATE()`;
                 var data2 = await MyQuery.query(sql, { type: QueryTypes.SELECT });
                 console.log(data2,"yes");
                 commonController.successMessage({addSlote,data1,data2}, "New Slote Added", res);
                 return;
             }
 
-            let addSlote = await db.Users.findAll({
-                where: {
-                    segmentType: buttonValue
-                }
-            });
-
-            for (let i = 0; i < addSlote.length; i++) {
-                const today = `SELECT COUNT(*) AS show_count FROM AddAnalists WHERE \`show\` = 1 and userId = ${addSlote[i].id};`;
-                const showCount = await MyQuery.query(today, { type: QueryTypes.SELECT });
-
-                const today1 = `SELECT COUNT(*) AS click_count FROM AddAnalists WHERE \`click\` = 1 and userId = ${addSlote[i].id};`;
-                const clickCount = await MyQuery.query(today, { type: QueryTypes.SELECT });
-
-
-                // Add the show_count to the dataValues object of each element
-                addSlote[i].dataValues.show_count = showCount[0].show_count;
-                addSlote[i].dataValues.click_count = clickCount[0].show_count;
-            }
+            const today = `
+            SELECT
+            u.*,
+            COUNT(DISTINCT aa_show.id) AS show_count,
+            COUNT(DISTINCT aa_click.id) AS click_count
+          FROM Users u
+          LEFT JOIN AddAnalists aa_show ON u.id = aa_show.userId AND aa_show.show = 1
+          LEFT JOIN AddAnalists aa_click ON u.id = aa_click.userId and aa_click.click = 1
+          GROUP BY u.id
+          ORDER BY u.id DESC;
+          `;
+               const addSlote = await MyQuery.query(today, { type: QueryTypes.SELECT });
+          
             var sql = `SELECT COUNT(*) AS total FROM Users where segmentType =${buttonValue}`;
             var data1 = await MyQuery.query(sql, { type: QueryTypes.SELECT });
             var sql = `SELECT COUNT(*) AS total
@@ -283,6 +281,71 @@ class AdminCodeController {
             commonController.errorMessage("Not Found", res)
         }
     }
+    async cpm(payload: any, res: Response) {
+        try {
+            const { Id,days } = payload;
+            console.log(days,"saas");
+            
+            if(days.length == 0){
+                var sql = `SELECT
+                p.userId,
+                COUNT(*) AS totalMatches,
+                SUM(p.win) AS totalWins,
+                SUM(p.lose) AS totalLosses,
+                (SUM(p.win) / COUNT(*) * 100) AS winningRatio,
+                u.mobileNumber
+            FROM
+                Performances p
+            JOIN
+                Users u ON p.userId = u.id
+            WHERE
+                p.createdAt >= DATE_SUB(NOW(), INTERVAL 1 DAY)
+                AND p.userId IN (
+                    SELECT userId
+                    FROM Performances
+                    WHERE createdAt >= DATE_SUB(NOW(), INTERVAL 1 DAY)
+                    GROUP BY userId
+                    HAVING COUNT(DISTINCT DATE(createdAt)) >= 1
+                )
+            GROUP BY
+                p.userId;`;
+                var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
+               
+                commonController.successMessage(data, "Data getting successfully", res)
+                return
+            }
+             console.log(payload,"pattt");
+             
+                var sql = `SELECT
+                p.userId,
+                COUNT(*) AS totalMatches,
+                SUM(p.win) AS totalWins,
+                SUM(p.lose) AS totalLosses,
+                (SUM(p.win) / COUNT(*) * 100) AS winningRatio,
+                u.mobileNumber
+            FROM
+                Performances p
+            JOIN
+                Users u ON p.userId = u.id
+            WHERE
+                p.createdAt >= DATE_SUB(NOW(), INTERVAL ${days} DAY)
+                AND p.userId IN (
+                    SELECT userId
+                    FROM Performances
+                    WHERE createdAt >= DATE_SUB(NOW(), INTERVAL ${days} DAY)
+                    GROUP BY userId
+                    HAVING COUNT(DISTINCT DATE(createdAt)) >= ${days}
+                )
+            GROUP BY
+                p.userId;`;
+                var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
+               
+                commonController.successMessage(data, "Data getting successfully", res)
+           
+        } catch (e) {
+            commonController.errorMessage("Not Found", res)
+        }
+    }
     async updateSocial(payload: any, res: Response) {
         try {
             const { ID, instagram, rateUs, termscondition, privancyPolicy, maximum, minimum, withdrawFee, String } = payload;
@@ -420,7 +483,52 @@ class AdminCodeController {
         }
     }
 
+    async matchCount(payload: any, res: Response) {
+        const { Id, date, SegId } = payload;
+        console.log(payload, "payload");
 
+        try {
+         
+                // Fetch total user count
+                const totalUserCountQuery = `SELECT COUNT(*) as count FROM Performances`;
+                const [totalUserCountData] = await MyQuery.query(totalUserCountQuery, { type: QueryTypes.SELECT });
+                const totalUserCount = totalUserCountData.count; // Change this line
+                console.log(totalUserCount, "lklklkkl");
+
+
+                // Fetch today's user count based on the specified date
+                const today = `SELECT createdAt from Performances`;
+                const totalUser = await MyQuery.query(today, { type: QueryTypes.SELECT });
+
+                let todayUserCount = 0;
+                console.log("date----",date);
+                
+                for (let i = 0; i < totalUser.length; i++) {
+
+                    const datePortion = new Date(totalUser[i].createdAt).toISOString().split('T')[0];
+
+                    if (datePortion == date) {
+                        todayUserCount++
+                    }
+
+
+                }
+                console.log(todayUserCount, "todat");
+
+                const response = {
+                    totalUserCount,
+                    todayUserCount
+                };
+                commonController.successMessage(response, "success", res)
+                return;
+            
+           
+
+        } catch (e) {
+            console.log(e);
+            commonController.errorMessage("Not Found", res)
+        }
+    }
     async deleteslote(payload: any, res: Response) {
         const { id } = payload;
         console.log(payload, "payload");

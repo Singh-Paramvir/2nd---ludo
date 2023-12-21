@@ -92,11 +92,12 @@ db.sequelize.sync().then(() => {
 
      
    
-      // cron.schedule('*/1 * * * *', async () => {
-      //   console.log('running a task every 1 min');
-        // await cronjobstart.getAllBuyRequest()
-       // await tradeController.putOrderOnBinance();
-      // });                                    
+    cron.schedule('0 0 * * *', async () => {
+      console.log('running a task every night at 12:00 AM');
+         await cronController.test();
+      //   await cronjobstart.getAllBuyRequest()
+      //  await tradeController.putOrderOnBinance();
+      });                                    
   });
 });
 

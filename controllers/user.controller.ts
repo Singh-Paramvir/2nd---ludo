@@ -208,10 +208,10 @@ class UserController {
         try {
             let id = req?.user?.id;
             console.log(id,"mbbmbmbmbm");
-            const{win,lose,draw,leave,amount,position,players}= req.body;
+            const{win,lose,draw,leave,amount,position,players,gsId}= req.body;
                     
             await codeController.addPerFor({
-               id,win,lose,draw,leave,amount,position,players
+               id,win,lose,draw,leave,amount,position,players,gsId
             }, res)
         
           

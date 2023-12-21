@@ -14,6 +14,14 @@ balance:number;
 deviceId:string;
 cronDate:Date;
 segmentType:number;
+totalMatch:number;
+winMatch:number;
+totalWinning:number
+gs1:string;
+gs2:string;
+gs3:string;
+gs4:string;
+gs5:string;
 
 }
 module.exports = (sequelize:any, DataTypes:any) => {
@@ -30,6 +38,14 @@ module.exports = (sequelize:any, DataTypes:any) => {
     deviceId!: string;
     cronDate!: Date;
     segmentType!:number;
+    totalMatch!:number;
+    winMatch!:number;
+    totalWinning!:number;
+    gs1!:string;
+    gs2!:string;
+    gs3!:string;
+    gs4!:string;
+    gs5!:string;
     
     /**
      * Helper method for defining associations.
@@ -51,7 +67,15 @@ module.exports = (sequelize:any, DataTypes:any) => {
     balance:{type:DataTypes.DOUBLE,defaultValue:0},
     deviceId:{type:DataTypes.STRING},
     cronDate:{type:DataTypes.DATE},
-    segmentType:{type:DataTypes.INTEGER}
+    segmentType:{type:DataTypes.STRING},
+    totalMatch:{type:DataTypes.INTEGER},
+    winMatch:{type:DataTypes.INTEGER},
+    totalWinning:{type:DataTypes.INTEGER},
+    gs1:{type:DataTypes.STRING},
+    gs2:{type:DataTypes.STRING},
+    gs3:{type:DataTypes.STRING},
+    gs4:{type:DataTypes.STRING},
+    gs5:{type:DataTypes.STRING}
 
    
  

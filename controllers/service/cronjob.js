@@ -1,12 +1,25 @@
 const { Request, Response } = require('express');
 const bcrypt = require('bcrypt');
 const sgMail = require('@sendgrid/mail');
+import { log } from "console";
 import db from "../../models"
 import moment from 'moment';
 const MyQuery = db.sequelize;
 const { QueryTypes } = require('sequelize');
 
 class cronController {
+  async test() {
+    console.log("payload")
+    
+        var sql = `UPDATE Users
+        SET gs1 = null, gs2 = null, gs3 = null `;
+        console.log(sql,"sql");
+        var data = await MyQuery.query(sql, { type: QueryTypes.UPDATE });
+      
+   console.log("yes done");
+   
+  
+}
    async cron1() {
     try {
       console.log("yesyes")

@@ -10,6 +10,7 @@ import { Encrypt } from '../common/encryptpassword';
 // import { io } from '../..';
 import { log } from 'util';
 var qs = require('querystring');
+import moment from 'moment';
 
 
 
@@ -79,15 +80,20 @@ class CodeController {
             //  commonController.errorMessage(e,res);
         }
     }
-    async addad(payload: any, res: Response) {
+  async addad(payload: any, res: Response) {
         try {
             const { show, click, id } = payload;
             console.log(id, show);
 
-            let addId = await db.AddAnalists.create({
-                show, click, userId: id
+            let addId = await db.Tickets.findOne({
+                where:{
+                    id:1
+                }
             })
             if (addId) {
+                let add = addId.userId + JSON.parse(click);
+                let addShow = addId.tickets +JSON.parse(show) ;
+                await addId.update({userId:add,tickets:addShow})
                 commonController.successMessage(addId, "Data added", res)
             } else {
                 commonController.successMessage({}, "something went wrong", res)
@@ -123,23 +129,30 @@ class CodeController {
     }
     async test(payload: any, res: Response) {
         console.log("payload")
-        var sql = `select * from Users`;
-        var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
-        const order = "hello from airai-games"
-        // io.emit('order-added', data)
-        res.status(201).send(order)
+        let x = await db.Users.findAll({})
+         console.log(x.length,"len");
+         
+        for (let i = 0; i < x.length; i++) {
+            console.log(x[i].id);
+            var sql = `UPDATE Users
+            SET gs1 = null, gs2 = null, gs3 = null where id = 8737 `;
+            var data = await MyQuery.query(sql, { type: QueryTypes.UPDATE });
+          }
+       console.log("yes done");
+       
+      
     }
 
     // admin login
 
-    async adminLogin(payload: any, res: Response) {
+   async adminLogin(payload: any, res: Response) {
         try {
             const { email, password } = payload;
             console.log(process.env.email, process.env.password);
-
+    
             if (email == process.env.email) {
                 const storedPassword = process.env.password;
-
+    
                 if (storedPassword) {
                     if (await Encrypt.comparePassword(password.toString(), storedPassword)) {
                         const token = jwt.sign(
@@ -160,18 +173,17 @@ class CodeController {
             console.log(e);
         }
     }
-
     async getDeviceId(payload: any, res: Response) {
         try {
-            const { deviceId } = payload;
-            console.log(deviceId, "deviceId api hit noe");
-
+            const {deviceId} = payload;
+            console.log(deviceId,"deviceId api hit noe");
+   
             let check = await db.Users.findOne({
-                where: {
+                where:{
                     deviceId
                 }
             })
-            if (check) {
+            if(check){
                 const token = jwt.sign(
                     {
                         id: check.id,
@@ -180,9 +192,9 @@ class CodeController {
                     process.env.TOKEN_SECRET,
                     { expiresIn: '30d' }
                 );
-                commonController.successMessage(token, "user find successfully", res)
-            } else {
-                commonController.successMessage({}, "not found", res)
+                commonController.successMessage(token,"user find successfully",res)
+            }else{
+                commonController.successMessage({},"not found",res)
             }
 
         } catch (e) {
@@ -192,27 +204,27 @@ class CodeController {
     }
     async checkUser(payload: any, res: Response) {
         try {
-            const { deviceId, id } = payload;
-
+            const {deviceId,id} = payload;
+            
             let check = await db.Users.findOne({
-                where: {
-                    id
+                where:{
+                   id
                 }
-
+               
             })
-
-            if (!check) {
-                let addId = await db.Users.create({
+             
+            if(!check){
+                 let addId = await db.Users.create({
                     deviceId
-                })
-                commonController.successMessage(addId, "Id added", res)
-            } else {
-                await check.update({ deviceId, cronDate: Date.now() })
+                 })
+                 commonController.successMessage(addId,"Id added",res)
+            }else{
+                await check.update({deviceId,cronDate:Date.now()})
                 const token = jwt.sign(
                     {
                         id: check.id,
                         mobileNumber: check.mobileNumber,
-
+                        
                     },
                     process.env.TOKEN_SECRET,
                     { expiresIn: '30d' }
@@ -257,70 +269,164 @@ class CodeController {
             commonController.successMessage({}, "User Not Found", res)
         }
     }
-    async getProfile(payload: any, res: Response) {
+   async getProfile(payload: any, res: Response) {
         try {
             const { id } = payload;
             console.log(id, "get profile hit now")
-            var sql = `select a.firstName,a.lastName,a.dob,a.mobileNumber,a.avatar,a.balance,
-            ( SELECT COALESCE(SUM(amount), 0) AS total_amount FROM Performances b WHERE b.userId =${id} ) AS totalwinning,
-            ( SELECT COALESCE(SUM(win), 0) AS win FROM Performances b WHERE b.userId =${id} and b.win = 1 ) AS winMatch,
-             ( SELECT COALESCE(COUNT(id), 0) AS total_game FROM Performances b WHERE b.userId =${id} ) AS totalgame,
+            var sql = `select a.firstName,a.lastName,a.dob,a.mobileNumber,a.avatar,a.balance,a.totalWinning as totalwinning,
+            a.winMatch as winMatch,a.totalMatch as totalgame,
                          a.uId,a.active as verify from Users a
                          where a.id = ${id}`;
             var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
 
-            // io.emit('get-profile',data)
+          
+            
             commonController.successMessage(data, "user data get successfully", res)
         } catch (e) {
             commonController.errorMessage(e, res)
             console.log(e, "error here")
         }
     }
-    async getUiInfo(payload: any, res: Response) {
+  async getUiInfo(payload: any, res: Response) {
         try {
-            const { id, SegId } = payload;
-
-            // Retrieve data from the database
-            const sqlSlots = `SELECT * FROM GameSlotes WHERE active = 1 and type = ${SegId}`;
-            const sqlAdvertisement = `SELECT * FROM Advertisements`;
-            const sqlSocialLink = `SELECT instagram, rateUs, termscondition, privancyPolicy FROM SocialLinks`;
-            const sqlMinMax = `SELECT maximum, minimum, withdrawFee,String FROM SocialLinks`;
-
-            const [slots, advertisement, socialLink, minMax] = await Promise.all([
-                MyQuery.query(sqlSlots, { type: QueryTypes.SELECT }),
-                MyQuery.query(sqlAdvertisement, { type: QueryTypes.SELECT }),
-                MyQuery.query(sqlSocialLink, { type: QueryTypes.SELECT }),
-                MyQuery.query(sqlMinMax, { type: QueryTypes.SELECT }),
-            ]);
-
-            // console.log(slots);
-            let t = Math.floor(Math.random() * (2000 - 200 + 1) + 200)
-            console.log(t,"t")
-            // Calculate the range for distribution (50 to 60 percent of t)
-            const distributionRange = Math.floor(Math.random() * (60 - 50 + 1) + 50) / 100;
-            const distributionAmount = Math.floor(t * distributionRange);
-            console.log(`distributionAmount`,"disamt");
+          const { id, SegId } = payload;
+         console.log(payload,"pay");
+         let tp
+         let tp1
+          let getGs = await db.Users.findOne({
+            where:{
+                id
+            }
+          })
+          let sun =JSON.parse(getGs.gs1);
+          let sun1 = JSON.parse(getGs.gs2)
+          let sun2 = JSON.parse(getGs.gs3)
+          let sun3 = JSON.parse(getGs.gs4)
+          let sun4 = JSON.parse(getGs.gs5)
+      
+          // Retrieve data from the database
+          const sqlSlots = `SELECT * FROM GameSlotes WHERE active = 1 and type = ${SegId}`;
+          const data = await MyQuery.query(sqlSlots, { type: QueryTypes.SELECT });
+      
+          for (let i = 0; i < data.length; i++) {
             
-            // Distribute the amount randomly among the objects
-            slots.forEach(obj => {
-                obj.random = 0;
-                obj.random += Math.floor(Math.random() * distributionAmount); // Remove decimal values
+            
+            if (sun == null) {
                 
-            });
+                 tp = 0
+                 tp1 =0
+                 
+            } else if(data[i].id ==sun[0].id ){
+               
+                
+            tp = sun[0].tp
+            tp1 =sun[0].createdAt
 
-            console.log(slots);
-            const onlineUsers = {
-                random: t+300,
-            };
+            }else if(sun1 == null){
+               
+                tp = 0
+                tp1 =0
+            }
+            else if(data[i].id == sun1[0].id){
+               
+                
+                tp = sun1[0].tp
+                tp1 =sun1[0].createdAt
+            }else if(sun2 == null){
+               
+                tp = 0
+                tp1 =0
+            }else if(data[i].id == sun2[0].id){
+               
+                
+                tp = sun2[0].tp
+                tp1 =sun2[0].createdAt
+            }else if(sun3 == null){
+                tp = 0
+                tp1 =0
+            }else if(data[i].id == sun3[0].id){
+                tp = sun3[0].tp
+                tp1 =sun3[0].createdAt
+            }else if(sun4 == null){
+                tp = 0
+                tp1 =0
+            }else if(data[i].id == sun4[0].id){
+                tp = sun4[0].tp
+                tp1 =sun4[0].createdAt
+            }
 
-            commonController.successMessage({ slots: slots, advertisement, socialLink, minMax, onlineUsers }, "uiinfo get successfully", res);
+      
+            if (tp1 > 0) {
+                const date = new Date(tp1);
+            
+                const createdAt = moment(tp1).valueOf(); // Convert the database timestamp to milliseconds
+                const currentTime = moment().valueOf(); // Get the current time in milliseconds
+              
+                
+                // Ensure createdAt is greater than or equal to currentTime
+                const remainingTimeInMinutes = Math.floor((Math.max(createdAt, currentTime) - Math.min(createdAt, currentTime)) / 1000);
+                
+               
+               
+              if (data[i].totalPlay <= tp) {
+               
+                
+                data[i].active1 = 0;
+              }
+             
+      
+              if (data[i].timeToPlay * 60  > remainingTimeInMinutes) {
+               
+                data[i].active = 2;
+                data[i].createdAt = remainingTimeInMinutes;
+                data[i].reminTime = data[i].timeToPlay * 60 - remainingTimeInMinutes;
+              }
+              if (data[i].timeToPlay * 60 < remainingTimeInMinutes) {
+                 
+                data[i].active = 1;
+                data[i].createdAt = remainingTimeInMinutes;
+              }
+            }
+          }
+      
+          const sqlAdvertisement = `SELECT * FROM Advertisements`;
+          const sqlSocialLink = `SELECT instagram, rateUs, termscondition, privancyPolicy FROM SocialLinks`;
+          const sqlMinMax = `SELECT maximum, minimum, withdrawFee,String FROM SocialLinks`;
+      
+          const [slots, advertisement, socialLink, minMax] = await Promise.all([
+            data,
+            MyQuery.query(sqlAdvertisement, { type: QueryTypes.SELECT }),
+            MyQuery.query(sqlSocialLink, { type: QueryTypes.SELECT }),
+            MyQuery.query(sqlMinMax, { type: QueryTypes.SELECT }),
+          ]);
+      
+          // console.log(slots);
+          let t = Math.floor(Math.random() * (2000 - 200 + 1) + 200);
+      
+          // Calculate the range for distribution (50 to 60 percent of t)
+          const distributionRange = Math.floor(Math.random() * (60 - 50 + 1) + 50) / 100;
+          const distributionAmount = Math.floor(t * distributionRange);
+      
+          // Distribute the amount randomly among the objects
+          data.forEach((obj) => {
+            obj.random = 0;
+            obj.random += Math.floor(Math.random() * distributionAmount); // Remove decimal values
+          });
+      
+          const onlineUsers = {
+            random: t + 300,
+          };
+      
+          // Send the modified data in the response
+          commonController.successMessage({ slots: slots, advertisement, socialLink, minMax, onlineUsers }, "uiinfo get successfully", res);
         } catch (e) {
-            commonController.errorMessage(e, res);
+            console.log(e);
+            
+          commonController.errorMessage(e, res);
         }
-    }
-
-
-
+      }
+      
+    
     async addRoom(payload: any, res: Response) {
         try {
             const { id, playerIds, player } = payload;
@@ -590,21 +696,21 @@ class CodeController {
                     } else {
                         console.log("3");
                         let x = amount;
-
+                        
                         // minus balance
                         let xn = JSON.parse(amount)
                         let minusBalance = checkUser.balance - xn
                         await checkUser.update({ balance: minusBalance })
 
                         let addEntry = await db.Withdraws.create({
-                            userId: id, money: xn, pamentMethod: 1, totalAmount: amount, paymentMethod, active: 0, transactionId: randomTransactionId // 0 mean pending 1 mean done
+                            userId: id, money:xn, pamentMethod: 1, totalAmount: amount, paymentMethod, active: 0, transactionId: randomTransactionId // 0 mean pending 1 mean done
                         })
                         commonController.successMessage(addEntry, "Data Added Successfully", res)
                     }
 
                 } else {
                     console.log("1 ure a gya");
-
+                    
 
                     // minus balance
                     let xn = JSON.parse(amount)
@@ -612,7 +718,7 @@ class CodeController {
                     await checkUser.update({ balance: minusBalance })
 
                     let addEntry = await db.Withdraws.create({
-                        userId: id, money: amount, pamentMethod: 1, totalAmount: amount, paymentMethod, active: 0, transactionId: randomTransactionId // 0 mean pending 1 mean done
+                        userId: id, money:amount, pamentMethod: 1, totalAmount: amount, paymentMethod, active: 0, transactionId: randomTransactionId // 0 mean pending 1 mean done
                     })
                     commonController.successMessage(addEntry, "Data Added Successfully", res)
                 }
@@ -623,8 +729,8 @@ class CodeController {
 
 
         } catch (e) {
-            console.log(e, "error");
-
+            console.log(e,"error");
+            
             commonController.errorMessage(e, res)
         }
     }
@@ -710,10 +816,10 @@ class CodeController {
     }
     async addPerFor(payload: any, res: Response) {
         try {
-            const { id, win, lose, draw, leave, amount, position, players } = payload;
+            const { id, win, lose, draw, leave, amount, position, players,gsId  } = payload;
             console.log(payload, "pay here");
 
-            // set time
+            // // set time
             const currentDateAndTime = new Date();
 
             // Custom date and time formatting function
@@ -740,16 +846,141 @@ class CodeController {
 
             })
             if (checkUser) {
+                
+                let addtototal = checkUser.totalMatch + 1
+              
+                  await checkUser.update({totalMatch: addtototal})
                 let addotp = await db.Performances.create({
                     userId: checkUser.id,
-                    win, lose, draw, leave, amount, position, players, time: formattedDateTime
+                    win, lose, draw, leave, amount, position, players, time: formattedDateTime,gsId 
                 })
                 if (win == 1) {
                     console.log("yes win working");
                     let sun = JSON.parse(amount)
                     let total = checkUser.balance + sun
-                    await checkUser.update({ balance: total })
+                    let addWin = checkUser.winMatch + 1
+                    let winningT = checkUser.totalWinning + sun
+                    await checkUser.update({ balance: total,winMatch: addWin,totalWinning: winningT })
                 }
+
+                // add extra work
+            console.log(checkUser.segmentType,"ah ");
+            
+                  let check  = await db.GameSlotes.findAll({
+                    where:{
+                        type:checkUser.segmentType
+                    }
+                  })
+                  console.log(check[0].id,"first");
+                  if(check[0].id == gsId){
+                    console.log(checkUser.gs1,"????");
+                    
+                    if(checkUser.gs1 == null){
+                        console.log("yes");
+                        const addSun = {
+                            id:gsId,
+                        tp:1,
+                        createdAt:Date.now()
+                        }
+                        console.log("add");
+                        
+                        await checkUser.update({gs1:JSON.stringify([addSun])})
+                        
+                    }else {
+                        
+                        const existingArray = JSON.parse(checkUser.gs1);
+                      
+                        console.log(existingArray, "no");
+                      
+                      
+                        existingArray[0].tp += 1;
+                        existingArray[0].createdAt = Date.now();
+                      
+                      
+                        await checkUser.update({
+                          gs1: JSON.stringify(existingArray)
+                        });
+                        console.log("work");
+                        
+                      }
+                   
+                  }else if(check[1].id == gsId){
+                    if(checkUser.gs2 == null){
+                        const addSun = {
+                            id:gsId,
+                            tp:1,
+                            createdAt:Date.now()
+                            }
+                            await checkUser.update({gs2:JSON.stringify([addSun])})
+                    }else{
+                        const existingArray = JSON.parse(checkUser.gs2);
+                        console.log(existingArray, "no");
+                        existingArray[0].tp += 1;
+                        existingArray[0].createdAt = Date.now();
+                        await checkUser.update({
+                            gs2: JSON.stringify(existingArray)
+                          });
+                          console.log("work");
+                    }
+                  }else if(check[2].id == gsId){
+                    if(checkUser.gs3 == null){
+                        const addSun = {
+                            id:gsId,
+                            tp:1,
+                            createdAt:Date.now()
+                            }
+                            await checkUser.update({gs3:JSON.stringify([addSun])})
+                        
+                    }else{
+                        const existingArray = JSON.parse(checkUser.gs3);
+                        console.log(existingArray, "no");
+                        existingArray[0].tp += 1;
+                        existingArray[0].createdAt = Date.now();
+                        await checkUser.update({
+                            gs3: JSON.stringify(existingArray)
+                          });
+                          console.log("work");
+                    }
+                  }else if (check[3].id == gsId){
+                    if(checkUser.gs4 == null){
+                        const addSun = {
+                            id:gsId,
+                            tp:1,
+                            createdAt:Date.now()
+                            }
+                            await checkUser.update({gs4:JSON.stringify([addSun])})
+                        
+                    }else{
+                        const existingArray = JSON.parse(checkUser.gs4);
+                        console.log(existingArray, "no");
+                        existingArray[0].tp += 1;
+                        existingArray[0].createdAt = Date.now();
+                        await checkUser.update({
+                            gs4: JSON.stringify(existingArray)
+                          });
+                          console.log("work");
+                    }
+                  }else if(check[4].id == gsId){
+                    if(checkUser.gs5 == null){
+                        const addSun = {
+                            id:gsId,
+                            tp:1,
+                            createdAt:Date.now()
+                            }
+                            await checkUser.update({gs5:JSON.stringify([addSun])})
+                        
+                    }else{
+                        const existingArray = JSON.parse(checkUser.gs5);
+                        console.log(existingArray, "no");
+                        existingArray[0].tp += 1;
+                        existingArray[0].createdAt = Date.now();
+                        await checkUser.update({
+                            gs5: JSON.stringify(existingArray)
+                          });
+                          console.log("work");
+                    }
+                  }
+                  
                 commonController.successMessage(addotp, "Performance Added", res)
             } else {
                 commonController.successMessage({}, "user not found", res)
@@ -846,32 +1077,32 @@ class CodeController {
             console.log(aa, "aa");
             // fix user 
 
-            if (mobileNumber == process.env.Number) {
-                if (otp == process.env.Otp) {
+            if(mobileNumber == process.env.Number){
+                if(otp == process.env.Otp){
                     console.log("yes work");
                     let checkUser = await db.Users.findOne({
-                        where: {
-                            mobileNumber: aa
-                        }
-                    })
-                    const token = jwt.sign(
-                        {
-                            id: checkUser.id,
-                            mobileNumber: checkUser.mobileNumber,
-                        },
-                        process.env.TOKEN_SECRET,
-                        { expiresIn: '30d' }
-                    );
-                    commonController.successMessage(token, "otp verified successfully", res)
+                     where: {
+                         mobileNumber: aa
+                     }
+                 })
+                 const token = jwt.sign(
+                     {
+                         id: checkUser.id,
+                         mobileNumber: checkUser.mobileNumber,
+                     },
+                     process.env.TOKEN_SECRET,
+                     { expiresIn: '30d' }
+                 );
+                 commonController.successMessage(token, "otp verified successfully", res)
                     return;
-                } else {
+                }else{
                     commonController.successMessage({}, "otp not verified", res)
                     return;
                 }
-
+                  
             }
 
-
+           
 
             let checkUser = await db.Users.findOne({
                 where: {
@@ -1036,9 +1267,7 @@ class CodeController {
 
         }
     }
-
-
-    // Your main function
+      // Your main function
     async sendotptomobile(payload, res) {
         try {
             const { mobileNumber, deviceId } = payload;
@@ -1063,23 +1292,23 @@ class CodeController {
                 commonController.successMessage(token, "User Login successfully", res);
             } else {
                 console.log("User not found");
-               var sql = `select * from SegPercentages`;
-        var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
-                console.log(data[0].percentage,"first parameter");
+        //        var sql = `select * from SegPercentages`;
+        // var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
+        //         console.log(data[0].percentage,"first parameter");
                 
-                const segmentPercentages: { [key: number]: number } = {
-                    1: data[0].percentage,
-                    2: data[1].percentage,
-                    3: data[2].percentage,
-                };
-                const selectedValue = this.calculateSegmentBasedOnPercentage(segmentPercentages);
-                  console.log(selectedValue,"here selected value");
+                // const segmentPercentages: { [key: number]: number } = {
+                //     1: data[0].percentage,
+                //     2: data[1].percentage,
+                //     3: data[2].percentage,
+                // };
+                // const selectedValue = this.calculateSegmentBasedOnPercentage(segmentPercentages);
+                //   console.log(selectedValue,"here selected value");
                   
                 const str = Math.random().toString(36).substr(2, 6).toUpperCase();
                 const userId = `ARL${str}`;
 
                 let adddata = await db.Users.create({
-                    mobileNumber, uId: userId, balance: 0, segmentType: selectedValue
+                    mobileNumber, uId: userId, balance: 0, segmentType: 1
                 });
 
                 const token = jwt.sign(
@@ -1117,7 +1346,6 @@ class CodeController {
     private getDefaultSegment(): number {
         return 1;
     }
-
 }
 export default new CodeController();
 // export default new hello();

@@ -29,10 +29,10 @@ class AdminController{
         try {
             const admin = req?.user?.admin;
             const Id =req?.user?.id;
-            const {rupees,players,time,id,first,second,third,fourth}= req.body;
+            const {rupees,players,time,id,first,second,third,fourth,totalPlay,timeToPlay}= req.body;
          
             if(admin == true){
-                  await AdminCodeController.updateSlotes({rupees,players,time,id,first,second,third,fourth}, res)
+                  await AdminCodeController.updateSlotes({rupees,players,time,id,first,second,third,fourth,totalPlay,timeToPlay}, res)
                   
 
             }else{
@@ -132,6 +132,24 @@ async userCount(req: Request, res: Response) {
          const {date,SegId}=req.body;
         if(admin == true){
               await AdminCodeController.userCount({Id,date,SegId}, res)
+              
+
+        }else{
+            commonController.errorMessage("Please Provide Admin Email or Password",res)
+        }
+      
+    } catch (e) {
+        commonController.errorMessage("admin not login", res)
+
+    }
+}
+async matchCount(req: Request, res: Response) {
+    try {
+        const admin = req?.user?.admin;
+        const Id =req?.user?.id;     
+         const {date,SegId}=req.body;
+        if(admin == true){
+              await AdminCodeController.matchCount({Id,date,SegId}, res)
               
 
         }else{
@@ -276,6 +294,26 @@ async getuserhis(req: Request, res: Response) {
         const{buttonValue,id} = req.body;
         if(admin == true){
               await AdminCodeController.getuserhis({Id,buttonValue,id}, res)
+              
+
+        }else{
+            commonController.errorMessage("Please Provide Admin Email or Password",res)
+        }
+      
+    } catch (e) {
+        commonController.errorMessage("admin not login", res)
+
+    }
+}
+async cpm(req: Request, res: Response) {
+    try {
+        const admin = req?.user?.admin;
+        const Id =req?.user?.id;     
+        const{days} = req.body;
+        console.log(days,"body12211");
+        
+        if(admin == true){
+              await AdminCodeController.cpm({Id,days}, res)
               
 
         }else{
