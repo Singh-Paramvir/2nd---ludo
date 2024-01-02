@@ -36,6 +36,20 @@ class UserController {
                     console.log(e);
                 }    
                 } 
+
+         async extraAdd (req: Request, res: Response) {
+            try {
+                let id = req?.user?.id;
+              
+              
+                await codeController.extraAdd({
+                   id
+                }, res)
+            }catch (e) {
+                commonController.errorMessage("user not found", res)
+                console.log(e);
+            }    
+            }      
     async resendOtp(req: Request, res: Response) {
         try {
            const{mobileNumber}=req.body;

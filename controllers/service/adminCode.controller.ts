@@ -87,17 +87,7 @@ class AdminCodeController {
             console.log(payload, "pay");
 
             if (buttonValue == 0) {
-                const today = `
-                SELECT
-                u.*,
-                COUNT(DISTINCT aa_show.id) AS show_count,
-                COUNT(DISTINCT aa_click.id) AS click_count
-              FROM Users u
-              LEFT JOIN AddAnalists aa_show ON u.id = aa_show.userId AND aa_show.show = 1
-              LEFT JOIN AddAnalists aa_click ON u.id = aa_click.userId and aa_click.click = 1
-              GROUP BY u.id
-              ORDER BY u.id DESC;
-              `;
+                const today = ` SELECT * from Users order by id desc `;
               console.log(today);
               
                    const addSlote = await MyQuery.query(today, { type: QueryTypes.SELECT });
@@ -117,17 +107,7 @@ class AdminCodeController {
                 return;
             }
 
-            const today = `
-            SELECT
-            u.*,
-            COUNT(DISTINCT aa_show.id) AS show_count,
-            COUNT(DISTINCT aa_click.id) AS click_count
-          FROM Users u
-          LEFT JOIN AddAnalists aa_show ON u.id = aa_show.userId AND aa_show.show = 1
-          LEFT JOIN AddAnalists aa_click ON u.id = aa_click.userId and aa_click.click = 1
-          GROUP BY u.id
-          ORDER BY u.id DESC;
-          `;
+            const today = `SELECT * from Users where segmentType = ${buttonValue}  order by id desc `;
                const addSlote = await MyQuery.query(today, { type: QueryTypes.SELECT });
           
             var sql = `SELECT COUNT(*) AS total FROM Users where segmentType =${buttonValue}`;
@@ -246,9 +226,9 @@ class AdminCodeController {
         try {
             const { Id, buttonValue } = payload;
             
-                var sql = `SELECT u.id,u.mobileNumber, u.balance, u.segmentType, COUNT(p.id) AS totalMatches, SUM(p.win) AS totalWins,
-                SUM(p.lose) AS totalLoses FROM Users u LEFT JOIN Performances p ON u.id = p.userId
-            GROUP BY u.id, u.mobileNumber, u.balance, u.segmentType;`;
+                var sql = `SELECT u.id,u.mobileNumber, u.balance, u.segmentType, u.totalMatch,u.winMatch
+                FROM Users u LEFT JOIN Performances p ON u.id = p.userId
+           GROUP BY u.id, u.mobileNumber, u.balance, u.segmentType`;
                 var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
                
                 var sql = `SELECT COUNT(*) AS total FROM Performances ;`;
@@ -260,6 +240,8 @@ class AdminCodeController {
          
 
         } catch (e) {
+            console.log(e,"error");
+            
             commonController.errorMessage("Not Found", res)
         }
     }
@@ -278,6 +260,42 @@ class AdminCodeController {
          
 
         } catch (e) {
+            commonController.errorMessage("Not Found", res)
+        }
+    }
+    async getadddata(payload: any, res: Response) {
+        try {
+            const { Id, buttonValue,id } = payload;
+             console.log(payload,"pattt");
+             
+                var sql = `SELECT * from ExtraAdds `;
+                var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
+               
+               
+
+                commonController.successMessage(data, "Data getting successfully", res)
+           
+         
+
+        } catch (e) {
+            commonController.errorMessage("Not Found", res)
+        }
+    }
+    async ued(payload: any, res: Response) {
+        try {
+            const { Id,time,amount,perDay} = payload;
+             console.log(payload,"pattt");
+             
+             let editData = await db.ExtraAdds.findOne({
+                where:{
+                    id:1
+                }
+             })
+             if(editData){
+                await editData.update({ time,amount,perDay})
+             }
+                commonController.successMessage(editData, "Data getting successfully", res)
+           } catch (e) {
             commonController.errorMessage("Not Found", res)
         }
     }

@@ -23,21 +23,7 @@ app.use(
     origin: "*",
   })
 );
-app.use(express.static(path.resolve("./public")));
 
-app.get("/", (req, res) => {
-  const filePath = path.resolve("./public/pki-validation/75BAB5EED939DFAC6518805B4A0267C0.txt");
-
-  // Check if the file exists
-  if (fs.existsSync(filePath)) {
-    // Read the file and send its content as the response
-    const fileContent = fs.readFileSync(filePath, "utf-8");
-    res.send(fileContent);
-  } else {
-    // If the file doesn't exist, send a 404 Not Found response
-    res.status(404).send("File not found");
-  }
-});
 app.use("/avatars", express.static(__dirname + "/avatars"));
 app.use("/", express.static(__dirname + "/avatars"));
 const server = http.createServer(app)

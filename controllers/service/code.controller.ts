@@ -103,6 +103,44 @@ class CodeController {
 
         }
     }
+    async extraAdd(payload: any, res: Response) {
+        try {
+            const {  id } = payload;
+            console.log(id);
+
+            let addId = await db.Users.findOne({
+                where:{
+                    id
+                }
+            })
+            let getAmount = await db.ExtraAdds.findOne({
+                where:{
+                    id:1
+                }
+            })
+            console.log(getAmount.amount);
+            
+            if (addId) {
+                if(addId.EAWatch == null){
+                    console.log(addId.balance,"====",getAmount.amount);
+                    
+                    let sun = addId.balance + getAmount.amount
+                    await addId.update({EAWatch : 1,EATime:Date.now(),balance : sun})
+                commonController.successMessage(addId, "Data added", res)
+                return; 
+                }
+                console.log(addId.EAWatch,"????");
+                let sun = addId.balance + getAmount.amount
+                 await addId.update({EAWatch : addId.EAWatch + 1,EATime:Date.now(),balance : sun})
+                commonController.successMessage(addId, "Data added", res)
+            } else {
+                commonController.successMessage({}, "something went wrong", res)
+            }
+        } catch (e) {
+            console.log(e);
+
+        }
+    }
     // api to add user
     async addUser(payload: any, res: Response) {
         const { firstName, lastName, mobileNumber, dob } = payload;
@@ -392,6 +430,70 @@ class CodeController {
           const sqlAdvertisement = `SELECT * FROM Advertisements`;
           const sqlSocialLink = `SELECT instagram, rateUs, termscondition, privancyPolicy FROM SocialLinks`;
           const sqlMinMax = `SELECT maximum, minimum, withdrawFee,String FROM SocialLinks`;
+
+          // extra add code here
+          let checkAdd = await db.ExtraAdds.findOne({
+            where:{
+                id:1
+            }
+          })
+          console.log(checkAdd.id,"ExtraAdds id");
+
+          let arra: any = []
+          console.log(getGs.EATime,"eatime");
+          const date = new Date(getGs.EATime);
+            
+          const createdAt = moment(getGs.EATime).valueOf(); 
+          const currentTime = moment().valueOf(); 
+          const remainingTimeInMinutes = Math.floor((Math.max(createdAt, currentTime) - Math.min(createdAt, currentTime)) / 1000);
+           console.log(checkAdd.time * 60,"reererere   second due",remainingTimeInMinutes);
+           console.log("2nd data",getGs.EAWatch,checkAdd.perDay);
+           
+          if(getGs.EAWatch >= checkAdd.perDay){
+            console.log("1111");
+            
+            const extraAddData = {
+                "time":checkAdd.time,
+                "amount":checkAdd.amount,
+                "perDay":checkAdd.perDay,
+                "status":"0"
+            }
+            arra.push(extraAddData)
+          }else if(checkAdd.time * 60 > remainingTimeInMinutes){
+            console.log(checkAdd.time * 60,"pending time");
+
+            if(remainingTimeInMinutes == 0){
+                const extraAddData = {
+                    "time":checkAdd.time,
+                    "amount":checkAdd.amount,
+                    "perDay":checkAdd.perDay,
+                    "status":"1"
+                }
+                arra.push(extraAddData)
+            }else{
+                const extraAddData = {
+                    "time":checkAdd.time,
+                    "amount":checkAdd.amount,
+                    "perDay":checkAdd.perDay,
+                    "status":"2",
+                    "remainTime":checkAdd.time * 60 - remainingTimeInMinutes
+                }
+                arra.push(extraAddData)
+            }
+           
+          }else{
+            const extraAddData = {
+                "time":checkAdd.time,
+                "amount":checkAdd.amount,
+                "perDay":checkAdd.perDay,
+                "status":"1"
+            }
+            arra.push(extraAddData)
+          }
+         
+           
+          
+          
       
           const [slots, advertisement, socialLink, minMax] = await Promise.all([
             data,
@@ -418,7 +520,7 @@ class CodeController {
           };
       
           // Send the modified data in the response
-          commonController.successMessage({ slots: slots, advertisement, socialLink, minMax, onlineUsers }, "uiinfo get successfully", res);
+          commonController.successMessage({ slots: slots, advertisement, socialLink, minMax, onlineUsers,...arra }, "uiinfo get successfully", res);
         } catch (e) {
             console.log(e);
             

@@ -305,6 +305,42 @@ async getuserhis(req: Request, res: Response) {
 
     }
 }
+async getadddata(req: Request, res: Response) {
+    try {
+        const admin = req?.user?.admin;
+        const Id =req?.user?.id;     
+        const{buttonValue,id} = req.body;
+        if(admin == true){
+              await AdminCodeController.getadddata({Id,buttonValue,id}, res)
+              
+
+        }else{
+            commonController.errorMessage("Please Provide Admin Email or Password",res)
+        }
+      
+    } catch (e) {
+        commonController.errorMessage("admin not login", res)
+
+    }
+}
+async ued(req: Request, res: Response) {
+    try {
+        const admin = req?.user?.admin;
+        const Id =req?.user?.id;     
+        const{time,amount,perDay} = req.body;
+        if(admin == true){
+              await AdminCodeController.ued({Id,time,amount,perDay}, res)
+              
+
+        }else{
+            commonController.errorMessage("Please Provide Admin Email or Password",res)
+        }
+      
+    } catch (e) {
+        commonController.errorMessage("admin not login", res)
+
+    }
+}
 async cpm(req: Request, res: Response) {
     try {
         const admin = req?.user?.admin;

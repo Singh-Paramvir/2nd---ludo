@@ -12,9 +12,10 @@ class cronController {
     console.log("payload")
     
         var sql = `UPDATE Users
-        SET gs1 = null, gs2 = null, gs3 = null `;
+        SET gs1 = null, gs2 = null, gs3 = null,EAWatch = null,EATime = null `;
         console.log(sql,"sql");
-        var data = await MyQuery.query(sql, { type: QueryTypes.UPDATE });
+        var data = await MyQuery.query(sql, { type: QueryTypes.UPDATE }); 
+        
       
    console.log("yes done");
    

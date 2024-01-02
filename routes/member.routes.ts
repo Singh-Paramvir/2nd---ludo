@@ -27,7 +27,8 @@ const router=express.Router();
  router.post("/getwithdrawhistory",userController.getHistory)
  router.post("/getuiinfo",userController.getUiInfo)
  router.post("/addId",userController.checkUser)  
-router.post("/addad",userController.addad) 
+ router.post("/addad",userController.addad) 
+ router.post("/extraadd",userController.extraAdd) 
 
   
 export default router;  

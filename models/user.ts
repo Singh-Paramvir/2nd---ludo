@@ -22,6 +22,9 @@ gs2:string;
 gs3:string;
 gs4:string;
 gs5:string;
+EAWatch:number;
+EAActive:boolean;
+EATime:Date;
 
 }
 module.exports = (sequelize:any, DataTypes:any) => {
@@ -46,6 +49,9 @@ module.exports = (sequelize:any, DataTypes:any) => {
     gs3!:string;
     gs4!:string;
     gs5!:string;
+    EAWatch!:number;
+EAActive!:boolean;
+EATime!:Date;
     
     /**
      * Helper method for defining associations.
@@ -75,7 +81,10 @@ module.exports = (sequelize:any, DataTypes:any) => {
     gs2:{type:DataTypes.STRING},
     gs3:{type:DataTypes.STRING},
     gs4:{type:DataTypes.STRING},
-    gs5:{type:DataTypes.STRING}
+    gs5:{type:DataTypes.STRING},
+    EAWatch:{type:DataTypes.INTEGER},
+    EAActive:{type:DataTypes.BOOLEAN},
+    EATime:{type:DataTypes.DATE}
 
    
  
