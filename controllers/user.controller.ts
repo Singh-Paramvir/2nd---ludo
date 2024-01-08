@@ -49,7 +49,33 @@ class UserController {
                 commonController.errorMessage("user not found", res)
                 console.log(e);
             }    
-            }      
+          }  
+          async updateActive(req: Request, res: Response) {
+            try {
+                let id = req?.user?.id;
+              
+              
+                await codeController.updateActive({
+                   id
+                }, res)
+            }catch (e) {
+                commonController.errorMessage("user not found", res)
+                console.log(e);
+            }    
+          } 
+    async geteadata  (req: Request, res: Response) {
+                try {
+                    let id = req?.user?.id;
+                  
+                  
+                    await codeController.geteadata({
+                       id
+                    }, res)
+                }catch (e) {
+                    commonController.errorMessage("user not found", res)
+                    console.log(e);
+                }    
+                }   
     async resendOtp(req: Request, res: Response) {
         try {
            const{mobileNumber}=req.body;
@@ -222,10 +248,10 @@ class UserController {
         try {
             let id = req?.user?.id;
             console.log(id,"mbbmbmbmbm");
-            const{win,lose,draw,leave,amount,position,players,gsId}= req.body;
+            const{win,lose,draw,leave,amount,position,players,gsId,count}= req.body;
                     
             await codeController.addPerFor({
-               id,win,lose,draw,leave,amount,position,players,gsId
+               id,win,lose,draw,leave,amount,position,players,gsId,count
             }, res)
         
           

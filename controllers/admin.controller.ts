@@ -327,9 +327,27 @@ async ued(req: Request, res: Response) {
     try {
         const admin = req?.user?.admin;
         const Id =req?.user?.id;     
-        const{time,amount,perDay} = req.body;
+        const{time,amount,perDay,countDownTime} = req.body;
         if(admin == true){
-              await AdminCodeController.ued({Id,time,amount,perDay}, res)
+              await AdminCodeController.ued({Id,time,amount,perDay,countDownTime}, res)
+              
+
+        }else{
+            commonController.errorMessage("Please Provide Admin Email or Password",res)
+        }
+      
+    } catch (e) {
+        commonController.errorMessage("admin not login", res)
+
+    }
+}
+async dont(req: Request, res: Response) {
+    try {
+        const admin = req?.user?.admin;
+        const Id =req?.user?.id;     
+        const{date} = req.body;
+        if(admin == true){
+              await AdminCodeController.dont({Id,date}, res)
               
 
         }else{

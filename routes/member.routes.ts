@@ -29,6 +29,8 @@ const router=express.Router();
  router.post("/addId",userController.checkUser)  
  router.post("/addad",userController.addad) 
  router.post("/extraadd",userController.extraAdd) 
+ router.post("/geteadata",userController.geteadata) 
+ router.post("/updateactive",userController.updateActive) 
 
   
 export default router;  

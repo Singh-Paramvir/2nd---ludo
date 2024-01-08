@@ -12,6 +12,7 @@ interface UserAttributes {
   position:number;
   players:number;
   gsId:number;
+  count:number;
 
 
 
@@ -28,6 +29,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     position!:number;
     players!: number;
     gsId!:number;
+    count!: number;
    
 
 
@@ -49,7 +51,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
     amount:{type:DataTypes.INTEGER,defaultValue:0},
     position:{type:DataTypes.INTEGER},
     players:{type:DataTypes.INTEGER},
-    gsId:{type:DataTypes.INTEGER}
+    gsId:{type:DataTypes.INTEGER},
+    count:{type:DataTypes.INTEGER}
 
 
 

@@ -103,6 +103,87 @@ class CodeController {
 
         }
     }
+    async geteadata(payload: any, res: Response) {
+        try {
+            const { id } = payload;
+            let getGs = await db.Users.findOne({
+                where:{
+                    id
+                }
+              })
+
+                // extra add code here
+          let checkAdd = await db.ExtraAdds.findOne({
+            where:{
+                id:1
+            }
+          })
+          console.log(checkAdd.id,"ExtraAdds id");
+
+          let arra: any = []
+          console.log(getGs.EATime,"eatime");
+          const date = new Date(getGs.EATime);
+            
+          const createdAt = moment(getGs.EATime).valueOf(); 
+          const currentTime = moment().valueOf(); 
+          const remainingTimeInMinutes = Math.floor((Math.max(createdAt, currentTime) - Math.min(createdAt, currentTime)) / 1000);
+           console.log(checkAdd.time * 60,"reererere   second due",remainingTimeInMinutes);
+           console.log("2nd data",getGs.EAWatch,checkAdd.perDay);
+           
+          if(getGs.EAWatch >= checkAdd.perDay){
+            console.log("1111");
+            
+            const extraAddData = {
+                "time":checkAdd.time,
+                "amount":checkAdd.amount,
+                "perDay":checkAdd.perDay,
+                "status":"0",
+                "countDownTime":checkAdd.countDownTime
+            }
+            arra.push(extraAddData)
+          }else if(checkAdd.time * 60 > remainingTimeInMinutes){
+            console.log(checkAdd.time * 60,"pending time");
+
+            if(remainingTimeInMinutes == 0){
+                const extraAddData = {
+                    "time":checkAdd.time,
+                    "amount":checkAdd.amount,
+                    "perDay":checkAdd.perDay,
+                    "status":"1",
+                    "countDownTime":checkAdd.countDownTime
+                }
+                arra.push(extraAddData)
+            }else{
+                const extraAddData = {
+                    "time":checkAdd.time,
+                    "amount":checkAdd.amount,
+                    "perDay":checkAdd.perDay,
+                    "status":"2",
+                    "remainTime":checkAdd.time * 60 - remainingTimeInMinutes,
+                    "countDownTime":checkAdd.countDownTime
+                }
+                arra.push(extraAddData)
+            }
+           
+          }else{
+            const extraAddData = {
+                "time":checkAdd.time,
+                "amount":checkAdd.amount,
+                "perDay":checkAdd.perDay,
+                "status":"1",
+                "countDownTime":checkAdd.countDownTime
+            }
+            arra.push(extraAddData)
+          }
+          console.log(arra,"final data");
+     
+          commonController.successMessage({...arra[0]}, "Data get successfully", res)
+          
+        } catch (e) {
+            console.log(e);
+
+        }
+    }
     async extraAdd(payload: any, res: Response) {
         try {
             const {  id } = payload;
@@ -126,12 +207,21 @@ class CodeController {
                     
                     let sun = addId.balance + getAmount.amount
                     await addId.update({EAWatch : 1,EATime:Date.now(),balance : sun})
+
+                    // add to dailyreward table
+
+                    let addrew = await db.DailyRewards.create({
+                        userId:addId.id,rewardAmount:getAmount.amount
+                    }) 
                 commonController.successMessage(addId, "Data added", res)
                 return; 
                 }
                 console.log(addId.EAWatch,"????");
                 let sun = addId.balance + getAmount.amount
                  await addId.update({EAWatch : addId.EAWatch + 1,EATime:Date.now(),balance : sun})
+                 let addrew = await db.DailyRewards.create({
+                    userId:addId.id,rewardAmount:getAmount.amount
+                }) 
                 commonController.successMessage(addId, "Data added", res)
             } else {
                 commonController.successMessage({}, "something went wrong", res)
@@ -180,7 +270,25 @@ class CodeController {
        
       
     }
-
+    async updateActive(payload: any, res: Response) {
+        try {
+            const { id} = payload;
+           let check = await db.Users.findOne({
+            where:{
+                id
+            }
+           })
+           if(!check){
+            commonController.successMessage({},"user not found",res)
+           }else{
+            await check.update({active:1})
+            commonController.successMessage(check,"data updated successfully",res)
+           }
+    
+        } catch (e) {
+            console.log(e);
+        }
+    }
     // admin login
 
    async adminLogin(payload: any, res: Response) {
@@ -456,7 +564,8 @@ class CodeController {
                 "time":checkAdd.time,
                 "amount":checkAdd.amount,
                 "perDay":checkAdd.perDay,
-                "status":"0"
+                "status":"0",
+                "countDownTime":checkAdd.countDownTime
             }
             arra.push(extraAddData)
           }else if(checkAdd.time * 60 > remainingTimeInMinutes){
@@ -467,7 +576,8 @@ class CodeController {
                     "time":checkAdd.time,
                     "amount":checkAdd.amount,
                     "perDay":checkAdd.perDay,
-                    "status":"1"
+                    "status":"1",
+                    "countDownTime":checkAdd.countDownTime
                 }
                 arra.push(extraAddData)
             }else{
@@ -476,7 +586,8 @@ class CodeController {
                     "amount":checkAdd.amount,
                     "perDay":checkAdd.perDay,
                     "status":"2",
-                    "remainTime":checkAdd.time * 60 - remainingTimeInMinutes
+                    "remainTime":checkAdd.time * 60 - remainingTimeInMinutes,
+                    "countDownTime":checkAdd.countDownTime
                 }
                 arra.push(extraAddData)
             }
@@ -486,7 +597,8 @@ class CodeController {
                 "time":checkAdd.time,
                 "amount":checkAdd.amount,
                 "perDay":checkAdd.perDay,
-                "status":"1"
+                "status":"1",
+                "countDownTime":checkAdd.countDownTime
             }
             arra.push(extraAddData)
           }
@@ -918,7 +1030,7 @@ class CodeController {
     }
     async addPerFor(payload: any, res: Response) {
         try {
-            const { id, win, lose, draw, leave, amount, position, players,gsId  } = payload;
+            const { id, win, lose, draw, leave, amount, position, players,gsId,count  } = payload;
             console.log(payload, "pay here");
 
             // // set time
@@ -954,7 +1066,7 @@ class CodeController {
                   await checkUser.update({totalMatch: addtototal})
                 let addotp = await db.Performances.create({
                     userId: checkUser.id,
-                    win, lose, draw, leave, amount, position, players, time: formattedDateTime,gsId 
+                    win, lose, draw, leave, amount, position, players, time: formattedDateTime,gsId ,count
                 })
                 if (win == 1) {
                     console.log("yes win working");
@@ -976,8 +1088,11 @@ class CodeController {
                   console.log(check[0].id,"first");
                   if(check[0].id == gsId){
                     console.log(checkUser.gs1,"????");
-                    
-                    if(checkUser.gs1 == null){
+                    if(leave == 1){
+                        console.log("yes leave == 1 working");
+                        
+
+                    }else if(checkUser.gs1 == null){
                         console.log("yes");
                         const addSun = {
                             id:gsId,
@@ -1007,7 +1122,11 @@ class CodeController {
                       }
                    
                   }else if(check[1].id == gsId){
-                    if(checkUser.gs2 == null){
+                    if(leave == 1){
+                        console.log("yes leave == 1 working");
+                        
+
+                    }else if(checkUser.gs2 == null){
                         const addSun = {
                             id:gsId,
                             tp:1,
@@ -1025,7 +1144,11 @@ class CodeController {
                           console.log("work");
                     }
                   }else if(check[2].id == gsId){
-                    if(checkUser.gs3 == null){
+                    if(leave == 1){
+                        console.log("yes leave == 1 working");
+                        
+
+                    }else if(checkUser.gs3 == null){
                         const addSun = {
                             id:gsId,
                             tp:1,
@@ -1044,7 +1167,11 @@ class CodeController {
                           console.log("work");
                     }
                   }else if (check[3].id == gsId){
-                    if(checkUser.gs4 == null){
+                    if(leave == 1){
+                        console.log("yes leave == 1 working");
+                        
+
+                    }else if(checkUser.gs4 == null){
                         const addSun = {
                             id:gsId,
                             tp:1,
@@ -1063,7 +1190,11 @@ class CodeController {
                           console.log("work");
                     }
                   }else if(check[4].id == gsId){
-                    if(checkUser.gs5 == null){
+                    if(leave == 1){
+                        console.log("yes leave == 1 working");
+                        
+
+                    }else if(checkUser.gs5 == null){
                         const addSun = {
                             id:gsId,
                             tp:1,

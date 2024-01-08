@@ -28,4 +28,5 @@ router.post("/getuserhis", AdminController.getuserhis)
 router.post("/cpm", AdminController.cpm)
 router.post("/getadddata", AdminController.getadddata)
 router.post("/ued", AdminController.ued)
+router.post("/dont", AdminController.dont)
 export default router;  

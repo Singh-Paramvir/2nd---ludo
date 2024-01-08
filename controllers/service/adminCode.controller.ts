@@ -283,7 +283,7 @@ class AdminCodeController {
     }
     async ued(payload: any, res: Response) {
         try {
-            const { Id,time,amount,perDay} = payload;
+            const { Id,time,amount,perDay,countDownTime} = payload;
              console.log(payload,"pattt");
              
              let editData = await db.ExtraAdds.findOne({
@@ -292,13 +292,100 @@ class AdminCodeController {
                 }
              })
              if(editData){
-                await editData.update({ time,amount,perDay})
+                await editData.update({ time,amount,perDay,countDownTime})
              }
                 commonController.successMessage(editData, "Data getting successfully", res)
            } catch (e) {
             commonController.errorMessage("Not Found", res)
         }
     }
+    async dont(payload: any, res: Response) {
+        try {
+            const { Id,date } = payload;
+            console.log(date.length,"len");
+           
+            
+            if(date.length == 0){
+                console.log("yes ");
+                
+                var sql1 = `SELECT COUNT(*) as EAWatch FROM DailyRewards WHERE DATE(createdAt) = CURDATE()`;
+                var reward = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+        
+
+                var sql2 = `SELECT COUNT(*) AS total FROM Users WHERE DATE(createdAt) = CURDATE()`;
+                var data2 = await MyQuery.query(sql2, { type: QueryTypes.SELECT });
+                
+                var sql3 = `SELECT COUNT(*) AS gs1 FROM Performances WHERE gsId = 11 AND DATE(createdAt) = CURDATE()`;
+                var gs1 = await MyQuery.query(sql3, { type: QueryTypes.SELECT });
+                
+                var sql4 = `SELECT COUNT(*) AS gs2 FROM Performances WHERE gsId = 12 AND DATE(createdAt) = CURDATE()`;
+                var gs2 = await MyQuery.query(sql4, { type: QueryTypes.SELECT });
+                
+                var sql5 = `SELECT COUNT(*) AS gs3 FROM Performances WHERE gsId = 13 AND DATE(createdAt) = CURDATE()`;
+                var gs3 = await MyQuery.query(sql5, { type: QueryTypes.SELECT });
+
+                var sql5 = `SELECT COUNT(*) AS cashapp FROM Users WHERE active = 1`;
+                var cash = await MyQuery.query(sql5, { type: QueryTypes.SELECT });
+        
+                console.log(reward, data2, gs1, gs2, gs3, "alllllll");
+        
+                const responseData = {
+                 
+                        EAWatch: reward[0].EAWatch,
+                        total: data2[0].total,
+                        gs1: gs1[0].gs1,
+                        gs2: gs2[0].gs2,
+                        gs3: gs3[0].gs3,
+                        cashAppDown:cash[0].cashapp
+                
+                };
+        
+                commonController.successMessage(responseData, "get successfully", res);
+                return;
+            }
+            console.log("no");
+            
+            var sql1 = `SELECT COUNT(*) as EAWatch FROM DailyRewards WHERE DATE(createdAt) = '${date}'`;
+            var reward = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+    
+            var sql2 = `SELECT COUNT(*) AS total FROM Users WHERE DATE(createdAt) = '${date}'`;
+                var data2 = await MyQuery.query(sql2, { type: QueryTypes.SELECT });
+                
+                var sql3 = `SELECT COUNT(*) AS gs1 FROM Performances WHERE gsId = 11 AND DATE(createdAt) = '${date}'`;
+                var gs1 = await MyQuery.query(sql3, { type: QueryTypes.SELECT });
+                
+                var sql4 = `SELECT COUNT(*) AS gs2 FROM Performances WHERE gsId = 12 AND DATE(createdAt) = '${date}'`;
+                var gs2 = await MyQuery.query(sql4, { type: QueryTypes.SELECT });
+                
+                var sql5 = `SELECT COUNT(*) AS gs3 FROM Performances WHERE gsId = 13 AND DATE(createdAt) = '${date}'`;
+            var gs3 = await MyQuery.query(sql5, { type: QueryTypes.SELECT });
+
+            var sql5 = `SELECT COUNT(*) AS cashapp FROM Users WHERE active = 1`;
+            var cash = await MyQuery.query(sql5, { type: QueryTypes.SELECT });
+    
+            console.log(reward, data2, gs1, gs2, gs3, "alllllll");
+    
+            const responseData = {
+             
+                    EAWatch: reward[0].EAWatch,
+                    total: data2[0].total,
+                    gs1: gs1[0].gs1,
+                    gs2: gs2[0].gs2,
+                    gs3: gs3[0].gs3,
+                    cashAppDown:cash[0].cashapp
+            
+            };
+    
+            commonController.successMessage(responseData, "get successfully", res);
+    
+        } catch (e) {
+            console.log(e);
+            commonController.errorMessage("Not Found", res);
+        }
+    }
+    
+
+
     async cpm(payload: any, res: Response) {
         try {
             const { Id,days } = payload;

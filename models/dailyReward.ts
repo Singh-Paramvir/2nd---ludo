@@ -3,19 +3,16 @@ import {
   Model
 } from 'sequelize';
 interface UserAttributes {
-  time: number;
- amount:number;
- perDay:number;
- countDownTime:number;
+  userId: number;
+ rewardAmount:number;
+
 
 }
 module.exports = (sequelize: any, DataTypes: any) => {
-  class ExtraAdd extends Model<UserAttributes>
+  class dailyRewars extends Model<UserAttributes>
     implements UserAttributes {
-      time!: number;
-      amount!:number;
-      perDay!:number;
-      countDownTime!:number;
+      userId!: number;
+ rewardAmount!:number;
 
     /**
      * Helper method for defining associations.
@@ -26,17 +23,16 @@ module.exports = (sequelize: any, DataTypes: any) => {
       // define association here
     }
   };
-  ExtraAdd.init({
-    time: { type: DataTypes.INTEGER },
-    amount:{type:DataTypes.DOUBLE},
-    perDay:{type:DataTypes.INTEGER},
-    countDownTime:{type:DataTypes.INTEGER}
+  dailyRewars.init({
+    userId: { type: DataTypes.INTEGER },
+    rewardAmount:{type:DataTypes.INTEGER,defaultValue:0},
+    
 
 
 
   }, {
     sequelize,
-    modelName: 'ExtraAdds',
+    modelName: 'DailyRewards',
   });
-  return ExtraAdd;
+  return dailyRewars;
 };
