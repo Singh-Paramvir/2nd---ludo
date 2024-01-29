@@ -11,6 +11,7 @@ import { Encrypt } from '../common/encryptpassword';
 import { log } from 'util';
 var qs = require('querystring');
 import moment from 'moment';
+const OneSignal = require('onesignal-node');
 
 
 
@@ -256,18 +257,38 @@ class CodeController {
         }
     }
     async test(payload: any, res: Response) {
-        console.log("payload")
-        let x = await db.Users.findAll({})
-         console.log(x.length,"len");
-         
-        for (let i = 0; i < x.length; i++) {
-            console.log(x[i].id);
-            var sql = `UPDATE Users
-            SET gs1 = null, gs2 = null, gs3 = null where id = 8737 `;
-            var data = await MyQuery.query(sql, { type: QueryTypes.UPDATE });
+        const { heading,message } = payload;
+        console.log(payload,"payyy");
+        
+        try {
+            console.log("yes");
+            const client = new OneSignal.Client(
+              process.env.onesignalappid, // appId
+              process.env.onesignalapikey // apiKey
+            );
+        
+            const notification = {
+              headings: { en: `${heading}` },
+              contents: {
+                en: `${message}`,
+              },
+              included_segments: ["Active Subscriptions"],
+            //   include_external_user_ids: ["ARLWJLR07"],
+            //   include_external_user_ids: ["ARL1XOH5W","ARLWJLR07"],
+              large_icon: "http://54.243.167.175:5000/avatars/testing.jpeg.png",
+              big_picture: "https://www.researchgate.net/profile/Cataldo-Guaragnella/publication/235406965/figure/fig1/AS:393405046771720@1470806480985/Original-image-256x256-pixels_Q320.jpg",
+              data: {
+                postId: '123',
+              },
+            };
+        
+            const res1 = await client.createNotification(notification);
+            console.log(res, "Notification sent successfully");
+            commonController.successMessage(res1,"user not found",res)
+          } catch (error) {
+            console.error(error);
+            commonController.errorMessage("Not Send", res);
           }
-       console.log("yes done");
-       
       
     }
     async updateActive(payload: any, res: Response) {
@@ -289,6 +310,113 @@ class CodeController {
             console.log(e);
         }
     }
+    async gamezop(payload: any, res: Response) {
+        try {
+            const { id } = payload;
+            let check = await db.Users.findOne({
+                where: {
+                    id
+                }
+            });
+    
+            if (!check) {
+                commonController.successMessage({}, "User not found", res);
+            } else {
+                let a = check.gamezopAdd + 1;
+               
+                let checkAdd2 = await db.ExtraAdds.findOne({
+                    where: {
+                        id: 2
+                    }
+                });
+    
+                let status: number;
+                let countDownTime: number;
+                let amount: number;
+    
+                if (check.gamezopAdd >= checkAdd2.perDay) {
+                    status = 0;
+                    countDownTime = checkAdd2.countDownTime;
+                    amount = checkAdd2.amount;
+                } else {
+                    status = 1;
+                    countDownTime = checkAdd2.countDownTime;
+                    amount = checkAdd2.amount;
+                }
+                let b = check.balance + checkAdd2.amount
+                await check.update({
+                    gamezopAdd: a,
+                    balance:b
+                   
+                });
+    
+             
+                const responseData = {
+                    ...check.dataValues,
+                    status,
+                    amount,
+                    countDownTime
+                };
+    
+                console.log(responseData, "check data");
+                
+                commonController.successMessage(responseData, "Data updated successfully", res);
+            }
+    
+        } catch (e) {
+            console.log(e);
+            // Handle the error appropriately
+            commonController.errorMessage("Error occurred", res);
+        }
+    }
+    
+    async addgamezop(payload: any, res: Response) {
+        try {
+            const { id } = payload;
+            let getGs = await db.Users.findOne({
+                where:{
+                    id
+                }
+              })
+              let checkAdd2 = await db.ExtraAdds.findOne({
+                where:{
+                    id:2
+                }
+              })
+              console.log(checkAdd2.perDay);
+              const gamezopData: Record<string, any> = {};
+    
+              let gamezopData1: Record<string, any>;
+              
+              if (getGs.gamezopAdd >= checkAdd2.perDay) {
+                gamezopData1 = {
+                  status: 0,
+                  perDay: checkAdd2.perDay,
+                  time: checkAdd2.time,
+                  amount: checkAdd2.amount,
+                  countDownTime: checkAdd2.countDownTime,
+                };
+              } else {
+                gamezopData1 = {
+                  status: 1,
+                  perDay: checkAdd2.perDay,
+                  time: checkAdd2.time,
+                  amount: checkAdd2.amount,
+                  countDownTime: checkAdd2.countDownTime,
+                };
+              }
+              
+              var sql = `select link from Advertisements`;
+              var links = await MyQuery.query(sql, { type: QueryTypes.SELECT });
+              // Now you can use gamezopData1
+            //   console.log(gamezopData1,"aalalalala");
+              commonController.successMessage({gamezopData1,links}, "data get successfully", res)
+
+        } catch (e) {
+            console.log(e);
+        }
+    }
+    
     // admin login
 
    async adminLogin(payload: any, res: Response) {
@@ -630,6 +758,10 @@ class CodeController {
           const onlineUsers = {
             random: t + 300,
           };
+
+        
+          
+
       
           // Send the modified data in the response
           commonController.successMessage({ slots: slots, advertisement, socialLink, minMax, onlineUsers,...arra }, "uiinfo get successfully", res);
@@ -1063,7 +1195,7 @@ class CodeController {
                 
                 let addtototal = checkUser.totalMatch + 1
               
-                  await checkUser.update({totalMatch: addtototal})
+                  await checkUser.update({totalMatch: addtototal,dob:Date.now()})
                 let addotp = await db.Performances.create({
                     userId: checkUser.id,
                     win, lose, draw, leave, amount, position, players, time: formattedDateTime,gsId ,count

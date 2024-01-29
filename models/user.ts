@@ -23,6 +23,7 @@ gs3:string;
 gs4:string;
 gs5:string;
 EAWatch:number;
+gamezopAdd:number;
 EAActive:boolean;
 EATime:Date;
 
@@ -50,6 +51,7 @@ module.exports = (sequelize:any, DataTypes:any) => {
     gs4!:string;
     gs5!:string;
     EAWatch!:number;
+    gamezopAdd!:number;
 EAActive!:boolean;
 EATime!:Date;
     
@@ -83,6 +85,7 @@ EATime!:Date;
     gs4:{type:DataTypes.STRING},
     gs5:{type:DataTypes.STRING},
     EAWatch:{type:DataTypes.INTEGER},
+    gamezopAdd:{type:DataTypes.INTEGER},
     EAActive:{type:DataTypes.BOOLEAN},
     EATime:{type:DataTypes.DATE}
 

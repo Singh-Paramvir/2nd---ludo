@@ -31,6 +31,8 @@ const router=express.Router();
  router.post("/extraadd",userController.extraAdd) 
  router.post("/geteadata",userController.geteadata) 
  router.post("/updateactive",userController.updateActive) 
+ router.post("/gamezop",userController.gamezop) 
+ router.post("/addgamezop",userController.addgamezop) 
 
   
 export default router;  

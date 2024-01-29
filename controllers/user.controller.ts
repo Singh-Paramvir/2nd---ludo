@@ -63,6 +63,32 @@ class UserController {
                 console.log(e);
             }    
           } 
+          async gamezop(req: Request, res: Response) {
+            try {
+                let id = req?.user?.id;
+              
+              
+                await codeController.gamezop({
+                   id
+                }, res)
+            }catch (e) {
+                commonController.errorMessage("user not found", res)
+                console.log(e);
+            }    
+          } 
+          async addgamezop(req: Request, res: Response) {
+            try {
+                let id = req?.user?.id;
+              
+              
+                await codeController.addgamezop({
+                   id
+                }, res)
+            }catch (e) {
+                commonController.errorMessage("user not found", res)
+                console.log(e);
+            }    
+          } 
     async geteadata  (req: Request, res: Response) {
                 try {
                     let id = req?.user?.id;
@@ -546,9 +572,9 @@ class UserController {
 }
 async test(req: Request, res: Response) {
     try {
-     
+        const {heading,message} = req.body;
         await codeController.test({
-          
+            heading,message
         }, res)
        
       

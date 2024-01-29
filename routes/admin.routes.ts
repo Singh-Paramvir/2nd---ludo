@@ -29,4 +29,7 @@ router.post("/cpm", AdminController.cpm)
 router.post("/getadddata", AdminController.getadddata)
 router.post("/ued", AdminController.ued)
 router.post("/dont", AdminController.dont)
+
+// notification push api
+router.post("/sendtoall", AdminController.sendToAll)
 export default router;  

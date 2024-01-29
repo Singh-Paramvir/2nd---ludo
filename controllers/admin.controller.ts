@@ -415,6 +415,30 @@ async updateseg(req: Request, res: Response) {
 
     }
 }
+
+// send notification
+
+async sendToAll(req: Request, res: Response) {
+    try {
+        const admin = req?.user?.admin;
+        const Id =req?.user?.id; 
+        const {heading,message,users} = req.body;
+
+        if(admin == true){
+            await AdminCodeController.test({
+                heading,message,users
+            }, res)
+            
+      }else{
+          commonController.errorMessage("Please Provide Admin Email or Password",res)
+      }      
+      
+    } catch (e) {
+        commonController.errorMessage("user not found", res)
+        console.log(e);
+
+    }
+}
   
 }
 

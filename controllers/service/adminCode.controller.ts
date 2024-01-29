@@ -13,6 +13,7 @@ const jwt = require('jsonwebtoken')
 import commonController from '../common/common.controller';
 const MyQuery = db.sequelize;
 const { QueryTypes } = require('sequelize');
+const OneSignal = require('onesignal-node');
 
 class AdminCodeController {
     async adminDetail(payload: any, res: Response) {
@@ -682,8 +683,184 @@ class AdminCodeController {
             console.log(e)
             commonController.errorMessage("Not Found", res)
         }
+    }
+    async test(payload: any, res: Response) {
+        const { heading,message,users } = payload;
+        console.log(payload,"payyy");
+        
+        try {
+               if(users == 0){
+                console.log("0");
+                
+                const client = new OneSignal.Client(
+                    process.env.onesignalappid, // appId
+                    process.env.onesignalapikey // apiKey
+                  );
+              
+                  const notification = {
+                    headings: { en: `${heading}` },
+                    contents: {
+                      en: `${message}`,
+                    },
+                    included_segments: ["Active Subscriptions"],
+                    large_icon: "",
+                    big_picture: "",
+                    data: {
+                      postId: '123',
+                    },
+                  };
+              
+                  const res1 = await client.createNotification(notification);
+                  commonController.successMessage(res1,"user not found",res)
+                  return;
+                
+               }else if(users == 1){
+                console.log("1");
+                const today = `SELECT uId FROM Users WHERE DATE(createdAt) = DATE_SUB(CURDATE(), INTERVAL 0 DAY)`;
+
+                const addSlote = await MyQuery.query(today, { type: QueryTypes.SELECT });
+                // console.log(addSlote, "assas");
+                
+                // Extract uId values from the array of objects
+                const uIdArray = addSlote.map(item => item.uId);
+                
+                // console.log(uIdArray, "Array of uIds");
+
+                const client = new OneSignal.Client(
+                    process.env.onesignalappid, // appId
+                    process.env.onesignalapikey // apiKey
+                  );
+              
+                  const notification = {
+                    headings: { en: `${heading}` },
+                    contents: {
+                      en: `${message}`,
+                    },
+                     include_external_user_ids:uIdArray ,
+                    large_icon: "",
+                    big_picture: "",
+                    data: {
+                      postId: '123',
+                    },
+                  };
+              
+                  const res1 = await client.createNotification(notification);
+                  commonController.successMessage(res1,"user not found",res)
+                return;
 
 
+               }else if(users == 2){
+                console.log("2");
+
+                const today = `SELECT uId FROM Users WHERE id NOT IN ( SELECT userId FROM Performances
+                    WHERE createdAt >= CURDATE() - INTERVAL 3 DAY
+                );`;
+
+                const addSlote = await MyQuery.query(today, { type: QueryTypes.SELECT });
+                // console.log(addSlote, "assas");
+                
+                // Extract uId values from the array of objects
+                const uIdArray = addSlote.map(item => item.uId);
+                
+                // console.log(uIdArray, "Array of uIds");
+
+                const client = new OneSignal.Client(
+                    process.env.onesignalappid, // appId
+                    process.env.onesignalapikey // apiKey
+                  );
+              
+                  const notification = {
+                    headings: { en: `${heading}` },
+                    contents: {
+                      en: `${message}`,
+                    },
+                     include_external_user_ids:uIdArray ,
+                    large_icon: "",
+                    big_picture: "",
+                    data: {
+                      postId: '123',
+                    },
+                  };
+              
+                  const res1 = await client.createNotification(notification);
+                  commonController.successMessage(res1,"user not found",res)
+                return;
+
+               }else if(users == 3){
+
+
+                const today = `SELECT uId FROM Users WHERE id NOT IN ( SELECT userId FROM Performances
+                    WHERE createdAt >= CURDATE() - INTERVAL 7 DAY
+                );`;
+
+                const addSlote = await MyQuery.query(today, { type: QueryTypes.SELECT });
+                // console.log(addSlote, "assas");
+                
+                // Extract uId values from the array of objects
+                const uIdArray = addSlote.map(item => item.uId);
+                
+                // console.log(uIdArray, "Array of uIds");
+
+                const client = new OneSignal.Client(
+                    process.env.onesignalappid, // appId
+                    process.env.onesignalapikey // apiKey
+                  );
+              
+                  const notification = {
+                    headings: { en: `${heading}` },
+                    contents: {
+                      en: `${message}`,
+                    },
+                     include_external_user_ids:uIdArray ,
+                    large_icon: "",
+                    big_picture: "",
+                    data: {
+                      postId: '123',
+                    },
+                  };
+              
+                  const res1 = await client.createNotification(notification);
+                  commonController.successMessage(res1,"user not found",res)
+                return;
+
+
+               }else{
+                console.log("Nothing ");
+                
+               }
+
+
+
+
+            // console.log("yes");
+            // const client = new OneSignal.Client(
+            //   process.env.onesignalappid, // appId
+            //   process.env.onesignalapikey // apiKey
+            // );
+        
+            // const notification = {
+            //   headings: { en: `${heading}` },
+            //   contents: {
+            //     en: `${message}`,
+            //   },
+            //   included_segments: ["Active Subscriptions"],
+            // //   include_external_user_ids: ["ARLWJLR07"],
+            // //   include_external_user_ids: ["ARLBGO5DU","ARLWJLR07"],
+            //   large_icon: "",
+            //   big_picture: "",
+            //   data: {
+            //     postId: '123',
+            //   },
+            // };
+        
+            // const res1 = await client.createNotification(notification);
+            // // console.log(res, "Notification sent successfully");
+            // commonController.successMessage(res1,"user not found",res)
+          } catch (error) {
+            console.error(error);
+            commonController.errorMessage("Not Send", res);
+          }
+      
     }
 }
 
