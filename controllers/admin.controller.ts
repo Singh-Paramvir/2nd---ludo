@@ -323,6 +323,62 @@ async getadddata(req: Request, res: Response) {
 
     }
 }
+async getgamezop(req: Request, res: Response) {
+    try {
+        const admin = req?.user?.admin;
+        const Id =req?.user?.id;     
+        const{buttonValue,id} = req.body;
+        if(admin == true){
+              await AdminCodeController.getgamezop({Id,buttonValue,id}, res)
+              
+
+        }else{
+            commonController.errorMessage("Please Provide Admin Email or Password",res)
+        }
+      
+    } catch (e) {
+        commonController.errorMessage("admin not login", res)
+
+    }
+}
+async getlinks(req: Request, res: Response) {
+    try {
+        const admin = req?.user?.admin;
+        const Id =req?.user?.id;     
+        const{buttonValue,id} = req.body;
+        if(admin == true){
+              await AdminCodeController.getlinks({Id,buttonValue,id}, res)
+              
+
+        }else{
+            commonController.errorMessage("Please Provide Admin Email or Password",res)
+        }
+      
+    } catch (e) {
+        commonController.errorMessage("admin not login", res)
+
+    }
+}
+async updatelinks(req: Request, res: Response) {
+    try {
+        console.log("inn");
+        
+        const admin = req?.user?.admin;
+        const Id =req?.user?.id;     
+        const{first,second,third,fourth,id} = req.body;
+        if(admin == true){
+              await AdminCodeController.updatelinks({Id,first,second,third,fourth,id}, res)
+              
+
+        }else{
+            commonController.errorMessage("Please Provide Admin Email or Password",res)
+        }
+      
+    } catch (e) {
+        commonController.errorMessage("admin not login", res)
+
+    }
+}
 async ued(req: Request, res: Response) {
     try {
         const admin = req?.user?.admin;
@@ -330,6 +386,24 @@ async ued(req: Request, res: Response) {
         const{time,amount,perDay,countDownTime} = req.body;
         if(admin == true){
               await AdminCodeController.ued({Id,time,amount,perDay,countDownTime}, res)
+              
+
+        }else{
+            commonController.errorMessage("Please Provide Admin Email or Password",res)
+        }
+      
+    } catch (e) {
+        commonController.errorMessage("admin not login", res)
+
+    }
+}
+async ued1(req: Request, res: Response) {
+    try {
+        const admin = req?.user?.admin;
+        const Id =req?.user?.id;     
+        const{time,amount,perDay,countDownTime} = req.body;
+        if(admin == true){
+              await AdminCodeController.ued1({Id,time,amount,perDay,countDownTime}, res)
               
 
         }else{

@@ -27,9 +27,13 @@ router.post("/getperfor", AdminController.getperfor)
 router.post("/getuserhis", AdminController.getuserhis)
 router.post("/cpm", AdminController.cpm)
 router.post("/getadddata", AdminController.getadddata)
+router.post("/getgamezop", AdminController.getgamezop)
 router.post("/ued", AdminController.ued)
+router.post("/ued1", AdminController.ued1)
 router.post("/dont", AdminController.dont)
 
+router.post("/getlinks", AdminController.getlinks)
+router.post("/updatelinks", AdminController.updatelinks)
 // notification push api
 router.post("/sendtoall", AdminController.sendToAll)
 export default router;  

@@ -282,6 +282,71 @@ class AdminCodeController {
             commonController.errorMessage("Not Found", res)
         }
     }
+    async getgamezop(payload: any, res: Response) {
+        try {
+            const { Id, buttonValue,id } = payload;
+             console.log(payload,"pattt");
+             
+                var sql = `SELECT * from ExtraAdds where id = 2`;
+                var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
+               
+               
+
+                commonController.successMessage(data, "Data getting successfully", res)
+           
+         
+
+        } catch (e) {
+            commonController.errorMessage("Not Found", res)
+        }
+    }
+    async getlinks(payload: any, res: Response) {
+        try {
+            const { Id, buttonValue,id } = payload;
+             console.log(payload,"pattt");
+             
+                var sql = `SELECT link from Advertisements`;
+                var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
+               
+               
+
+                commonController.successMessage(data, "Data getting successfully", res)
+           
+         
+
+        } catch (e) {
+            commonController.errorMessage("Not Found", res)
+        }
+    }
+    async updatelinks(payload: any, res: Response) {
+        try {
+            const { first, second, third, fourth } = payload;
+            console.log(payload, "payy");
+    
+            const sql = `
+                UPDATE Advertisements
+                SET link =
+                    CASE
+                        WHEN id = 1 THEN :first
+                        WHEN id = 2 THEN :second
+                        WHEN id = 3 THEN :third
+                        WHEN id = 4 THEN :fourth
+                    END
+                WHERE id IN (1, 2, 3, 4);
+            `;
+    
+            const data = await MyQuery.query(sql, {
+                replacements: { first, second, third, fourth },
+                type: QueryTypes.UPDATE,
+            });
+    
+            commonController.successMessage(data, "data updated", res);
+        } catch (e) {
+            console.error(e);
+            commonController.errorMessage("Not Found", res);
+        }
+    }
+    
     async ued(payload: any, res: Response) {
         try {
             const { Id,time,amount,perDay,countDownTime} = payload;
@@ -290,6 +355,24 @@ class AdminCodeController {
              let editData = await db.ExtraAdds.findOne({
                 where:{
                     id:1
+                }
+             })
+             if(editData){
+                await editData.update({ time,amount,perDay,countDownTime})
+             }
+                commonController.successMessage(editData, "Data getting successfully", res)
+           } catch (e) {
+            commonController.errorMessage("Not Found", res)
+        }
+    }
+    async ued1(payload: any, res: Response) {
+        try {
+            const { Id,time,amount,perDay,countDownTime} = payload;
+             console.log(payload,"pattt");
+             
+             let editData = await db.ExtraAdds.findOne({
+                where:{
+                    id:2
                 }
              })
              if(editData){
@@ -309,75 +392,25 @@ class AdminCodeController {
             if(date.length == 0){
                 console.log("yes ");
                 
-                var sql1 = `SELECT COUNT(*) as EAWatch FROM DailyRewards WHERE DATE(createdAt) = CURDATE()`;
-                var reward = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+                var sql1 = `select * from Matrics order by id desc limit 1`;
+                var data = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
         
 
-                var sql2 = `SELECT COUNT(*) AS total FROM Users WHERE DATE(createdAt) = CURDATE()`;
-                var data2 = await MyQuery.query(sql2, { type: QueryTypes.SELECT });
                 
-                var sql3 = `SELECT COUNT(*) AS gs1 FROM Performances WHERE gsId = 11 AND DATE(createdAt) = CURDATE()`;
-                var gs1 = await MyQuery.query(sql3, { type: QueryTypes.SELECT });
-                
-                var sql4 = `SELECT COUNT(*) AS gs2 FROM Performances WHERE gsId = 12 AND DATE(createdAt) = CURDATE()`;
-                var gs2 = await MyQuery.query(sql4, { type: QueryTypes.SELECT });
-                
-                var sql5 = `SELECT COUNT(*) AS gs3 FROM Performances WHERE gsId = 13 AND DATE(createdAt) = CURDATE()`;
-                var gs3 = await MyQuery.query(sql5, { type: QueryTypes.SELECT });
-
-                var sql5 = `SELECT COUNT(*) AS cashapp FROM Users WHERE active = 1`;
-                var cash = await MyQuery.query(sql5, { type: QueryTypes.SELECT });
-        
-                console.log(reward, data2, gs1, gs2, gs3, "alllllll");
-        
-                const responseData = {
-                 
-                        EAWatch: reward[0].EAWatch,
-                        total: data2[0].total,
-                        gs1: gs1[0].gs1,
-                        gs2: gs2[0].gs2,
-                        gs3: gs3[0].gs3,
-                        cashAppDown:cash[0].cashapp
-                
-                };
-        
-                commonController.successMessage(responseData, "get successfully", res);
+                commonController.successMessage(data, "get successfully", res);
                 return;
             }
             console.log("no");
+            console.log(date);
             
-            var sql1 = `SELECT COUNT(*) as EAWatch FROM DailyRewards WHERE DATE(createdAt) = '${date}'`;
-            var reward = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
-    
-            var sql2 = `SELECT COUNT(*) AS total FROM Users WHERE DATE(createdAt) = '${date}'`;
-                var data2 = await MyQuery.query(sql2, { type: QueryTypes.SELECT });
-                
-                var sql3 = `SELECT COUNT(*) AS gs1 FROM Performances WHERE gsId = 11 AND DATE(createdAt) = '${date}'`;
-                var gs1 = await MyQuery.query(sql3, { type: QueryTypes.SELECT });
-                
-                var sql4 = `SELECT COUNT(*) AS gs2 FROM Performances WHERE gsId = 12 AND DATE(createdAt) = '${date}'`;
-                var gs2 = await MyQuery.query(sql4, { type: QueryTypes.SELECT });
-                
-                var sql5 = `SELECT COUNT(*) AS gs3 FROM Performances WHERE gsId = 13 AND DATE(createdAt) = '${date}'`;
-            var gs3 = await MyQuery.query(sql5, { type: QueryTypes.SELECT });
-
-            var sql5 = `SELECT COUNT(*) AS cashapp FROM Users WHERE active = 1`;
-            var cash = await MyQuery.query(sql5, { type: QueryTypes.SELECT });
-    
-            console.log(reward, data2, gs1, gs2, gs3, "alllllll");
-    
-            const responseData = {
-             
-                    EAWatch: reward[0].EAWatch,
-                    total: data2[0].total,
-                    gs1: gs1[0].gs1,
-                    gs2: gs2[0].gs2,
-                    gs3: gs3[0].gs3,
-                    cashAppDown:cash[0].cashapp
+            var sql1 = `SELECT * FROM Matrics WHERE DATE(createdAt) = '${date}'`;
+            console.log(sql1,"query");
             
-            };
+            var data = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
     
-            commonController.successMessage(responseData, "get successfully", res);
+           
+    
+            commonController.successMessage(data, "get successfully", res);
     
         } catch (e) {
             console.log(e);
