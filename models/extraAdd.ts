@@ -7,6 +7,7 @@ interface UserAttributes {
  amount:number;
  perDay:number;
  countDownTime:number;
+ gamezopArray:string;
 
 }
 module.exports = (sequelize: any, DataTypes: any) => {
@@ -16,6 +17,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
       amount!:number;
       perDay!:number;
       countDownTime!:number;
+      gamezopArray!:string;
 
     /**
      * Helper method for defining associations.
@@ -30,7 +32,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
     time: { type: DataTypes.INTEGER },
     amount:{type:DataTypes.DOUBLE},
     perDay:{type:DataTypes.INTEGER},
-    countDownTime:{type:DataTypes.INTEGER}
+    countDownTime:{type:DataTypes.INTEGER},
+    gamezopArray:{type:DataTypes.STRING}
 
 
 

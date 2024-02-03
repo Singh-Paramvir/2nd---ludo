@@ -59,7 +59,8 @@ class cronController {
         type: QueryTypes.SELECT
       });
 
-      var sql5 = `SELECT COUNT(*) AS cashapp FROM Users WHERE active = 1`;
+      var sql5 = `SELECT COUNT(*) AS todayRowCount FROM Users
+      WHERE lastName IS NOT NULL AND DATE(createdAt) = CURRENT_DATE and DATE(lastName) = CURRENT_DATE`
       var cash = await MyQuery.query(sql5, {
         type: QueryTypes.SELECT
       });

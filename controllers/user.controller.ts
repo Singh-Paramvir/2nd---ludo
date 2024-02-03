@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import codeController from './service/code.controller'
 import commonController from './common/common.controller';
 import db from "../models"
+const MyQuery = db.sequelize;
+const { QueryTypes } = require('sequelize');
 
 class UserController {
 
@@ -56,6 +58,19 @@ class UserController {
               
               
                 await codeController.updateActive({
+                   id
+                }, res)
+            }catch (e) {
+                commonController.errorMessage("user not found", res)
+                console.log(e);
+            }    
+          } 
+          async firstreward(req: Request, res: Response) {
+            try {
+                let id = req?.user?.id;
+              
+              
+                await codeController.firstreward({
                    id
                 }, res)
             }catch (e) {
@@ -275,6 +290,71 @@ class UserController {
             let id = req?.user?.id;
             console.log(id,"mbbmbmbmbm");
             const{win,lose,draw,leave,amount,position,players,gsId,count}= req.body;
+
+             // add user to matrix
+             console.log("matric work");
+                  
+             var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
+             var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+
+             let dateObject = new Date(data1[0].createdAt);
+             let dateString = dateObject.toISOString();
+             let day = dateString.slice(8, 10);
+             day = day.replace(/^0/, '');
+             const d = new Date();
+             let currentDate = d.getDate();
+             if (currentDate == JSON.parse(day)) {
+
+                 var sql1 = `UPDATE Matrics SET totalMatch = totalMatch + 1`;
+                 var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+
+                 if(gsId == 11){
+                    var sql1 = `UPDATE Matrics SET totalMatchS1 = totalMatchS1 + 1`;
+                    var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+                 }else if(gsId == 12){
+                    var sql1 = `UPDATE Matrics SET totalMatchS2 = totalMatchS2 + 1`;
+                    var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+                 }else if(gsId == 13){
+                    var sql1 = `UPDATE Matrics SET totalMatchS3 = totalMatchS3 + 1`;
+                    var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+                 }
+             } else {
+                if(gsId == 11){
+                    let addData = await db.Matrics.create({
+                        todayUsers:0,
+                        cashAppTotal:0,
+                        dailyRewardTotal:0,
+                        totalMatchS1:1,
+                        totalMatchS2:0,
+                        totalMatchS3:0,
+                        totalMatch:1,
+                        gamezopeTotal:0
+                      }) 
+                }else if(gsId == 12){
+                    let addData = await db.Matrics.create({
+                        todayUsers:0,
+                        cashAppTotal:0,
+                        dailyRewardTotal:0,
+                        totalMatchS1:0,
+                        totalMatchS2:1,
+                        totalMatchS3:0,
+                        totalMatch:1,
+                        gamezopeTotal:0
+                      }) 
+                }else{
+                    let addData = await db.Matrics.create({
+                        todayUsers:0,
+                        cashAppTotal:0,
+                        dailyRewardTotal:0,
+                        totalMatchS1:0,
+                        totalMatchS2:0,
+                        totalMatchS3:1,
+                        totalMatch:1,
+                        gamezopeTotal:0
+                      }) 
+                }
+           
+             }
                     
             await codeController.addPerFor({
                id,win,lose,draw,leave,amount,position,players,gsId,count

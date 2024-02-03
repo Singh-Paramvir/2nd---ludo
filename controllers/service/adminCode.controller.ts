@@ -305,15 +305,21 @@ class AdminCodeController {
             const { Id, buttonValue,id } = payload;
              console.log(payload,"pattt");
              
-                var sql = `SELECT link from Advertisements`;
-                var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
-               
-               
-
-                commonController.successMessage(data, "Data getting successfully", res)
+                let sun = await db.ExtraAdds.findOne({
+                    where: {
+                        id: 2,
+                    },
+                });
+        
+                // Convert the string representation of links to a JSON array
+                const data = JSON.parse(sun.gamezopArray);
+                console.log(typeof data);
+                let moon = `${data}`
+                console.log(typeof sun.gamezopArray);
+                console.log("final",sun.gamezopArray);
+             
+                commonController.successMessage(sun.gamezopArray, "Data getting successfully", res)
            
-         
-
         } catch (e) {
             commonController.errorMessage("Not Found", res)
         }
@@ -323,24 +329,16 @@ class AdminCodeController {
             const { first, second, third, fourth } = payload;
             console.log(payload, "payy");
     
-            const sql = `
-                UPDATE Advertisements
-                SET link =
-                    CASE
-                        WHEN id = 1 THEN :first
-                        WHEN id = 2 THEN :second
-                        WHEN id = 3 THEN :third
-                        WHEN id = 4 THEN :fourth
-                    END
-                WHERE id IN (1, 2, 3, 4);
-            `;
+        
+
+          let check = await db.ExtraAdds.findOne({
+            where:{
+                id:2
+            }
+          })
+          await check.update({gamezopArray:first})
     
-            const data = await MyQuery.query(sql, {
-                replacements: { first, second, third, fourth },
-                type: QueryTypes.UPDATE,
-            });
-    
-            commonController.successMessage(data, "data updated", res);
+            commonController.successMessage(check, "data updated", res);
         } catch (e) {
             console.error(e);
             commonController.errorMessage("Not Found", res);
@@ -392,7 +390,7 @@ class AdminCodeController {
             if(date.length == 0){
                 console.log("yes ");
                 
-                var sql1 = `select * from Matrics order by id desc limit 1`;
+                var sql1 = `SELECT * FROM Matrics WHERE DATE(createdAt) = CURDATE() - INTERVAL 1 DAY`;
                 var data = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
         
 

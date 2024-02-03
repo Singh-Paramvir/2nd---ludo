@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken')
 import commonController from '../common/common.controller';
 import https from 'https'
 import { Encrypt } from '../common/encryptpassword';
+const { format } = require('date-fns');
+
 // socket code
 // import { io } from '../..';
 import { log } from 'util';
@@ -81,20 +83,20 @@ class CodeController {
             //  commonController.errorMessage(e,res);
         }
     }
-  async addad(payload: any, res: Response) {
+    async addad(payload: any, res: Response) {
         try {
             const { show, click, id } = payload;
             console.log(id, show);
 
             let addId = await db.Tickets.findOne({
-                where:{
-                    id:1
+                where: {
+                    id: 1
                 }
             })
             if (addId) {
                 let add = addId.userId + JSON.parse(click);
-                let addShow = addId.tickets +JSON.parse(show) ;
-                await addId.update({userId:add,tickets:addShow})
+                let addShow = addId.tickets + JSON.parse(show);
+                await addId.update({ userId: add, tickets: addShow })
                 commonController.successMessage(addId, "Data added", res)
             } else {
                 commonController.successMessage({}, "something went wrong", res)
@@ -108,78 +110,78 @@ class CodeController {
         try {
             const { id } = payload;
             let getGs = await db.Users.findOne({
-                where:{
+                where: {
                     id
                 }
-              })
+            })
 
-                // extra add code here
-          let checkAdd = await db.ExtraAdds.findOne({
-            where:{
-                id:1
-            }
-          })
-          console.log(checkAdd.id,"ExtraAdds id");
+            // extra add code here
+            let checkAdd = await db.ExtraAdds.findOne({
+                where: {
+                    id: 1
+                }
+            })
+            console.log(checkAdd.id, "ExtraAdds id");
 
-          let arra: any = []
-          console.log(getGs.EATime,"eatime");
-          const date = new Date(getGs.EATime);
-            
-          const createdAt = moment(getGs.EATime).valueOf(); 
-          const currentTime = moment().valueOf(); 
-          const remainingTimeInMinutes = Math.floor((Math.max(createdAt, currentTime) - Math.min(createdAt, currentTime)) / 1000);
-           console.log(checkAdd.time * 60,"reererere   second due",remainingTimeInMinutes);
-           console.log("2nd data",getGs.EAWatch,checkAdd.perDay);
-           
-          if(getGs.EAWatch >= checkAdd.perDay){
-            console.log("1111");
-            
-            const extraAddData = {
-                "time":checkAdd.time,
-                "amount":checkAdd.amount,
-                "perDay":checkAdd.perDay,
-                "status":"0",
-                "countDownTime":checkAdd.countDownTime
-            }
-            arra.push(extraAddData)
-          }else if(checkAdd.time * 60 > remainingTimeInMinutes){
-            console.log(checkAdd.time * 60,"pending time");
+            let arra: any = []
+            console.log(getGs.EATime, "eatime");
+            const date = new Date(getGs.EATime);
 
-            if(remainingTimeInMinutes == 0){
+            const createdAt = moment(getGs.EATime).valueOf();
+            const currentTime = moment().valueOf();
+            const remainingTimeInMinutes = Math.floor((Math.max(createdAt, currentTime) - Math.min(createdAt, currentTime)) / 1000);
+            console.log(checkAdd.time * 60, "reererere   second due", remainingTimeInMinutes);
+            console.log("2nd data", getGs.EAWatch, checkAdd.perDay);
+
+            if (getGs.EAWatch >= checkAdd.perDay) {
+                console.log("1111");
+
                 const extraAddData = {
-                    "time":checkAdd.time,
-                    "amount":checkAdd.amount,
-                    "perDay":checkAdd.perDay,
-                    "status":"1",
-                    "countDownTime":checkAdd.countDownTime
+                    "time": checkAdd.time,
+                    "amount": checkAdd.amount,
+                    "perDay": checkAdd.perDay,
+                    "status": "0",
+                    "countDownTime": checkAdd.countDownTime
                 }
                 arra.push(extraAddData)
-            }else{
+            } else if (checkAdd.time * 60 > remainingTimeInMinutes) {
+                console.log(checkAdd.time * 60, "pending time");
+
+                if (remainingTimeInMinutes == 0) {
+                    const extraAddData = {
+                        "time": checkAdd.time,
+                        "amount": checkAdd.amount,
+                        "perDay": checkAdd.perDay,
+                        "status": "1",
+                        "countDownTime": checkAdd.countDownTime
+                    }
+                    arra.push(extraAddData)
+                } else {
+                    const extraAddData = {
+                        "time": checkAdd.time,
+                        "amount": checkAdd.amount,
+                        "perDay": checkAdd.perDay,
+                        "status": "2",
+                        "remainTime": checkAdd.time * 60 - remainingTimeInMinutes,
+                        "countDownTime": checkAdd.countDownTime
+                    }
+                    arra.push(extraAddData)
+                }
+
+            } else {
                 const extraAddData = {
-                    "time":checkAdd.time,
-                    "amount":checkAdd.amount,
-                    "perDay":checkAdd.perDay,
-                    "status":"2",
-                    "remainTime":checkAdd.time * 60 - remainingTimeInMinutes,
-                    "countDownTime":checkAdd.countDownTime
+                    "time": checkAdd.time,
+                    "amount": checkAdd.amount,
+                    "perDay": checkAdd.perDay,
+                    "status": "1",
+                    "countDownTime": checkAdd.countDownTime
                 }
                 arra.push(extraAddData)
             }
-           
-          }else{
-            const extraAddData = {
-                "time":checkAdd.time,
-                "amount":checkAdd.amount,
-                "perDay":checkAdd.perDay,
-                "status":"1",
-                "countDownTime":checkAdd.countDownTime
-            }
-            arra.push(extraAddData)
-          }
-          console.log(arra,"final data");
-     
-          commonController.successMessage({...arra[0]}, "Data get successfully", res)
-          
+            console.log(arra, "final data");
+
+            commonController.successMessage({ ...arra[0] }, "Data get successfully", res)
+
         } catch (e) {
             console.log(e);
 
@@ -187,42 +189,71 @@ class CodeController {
     }
     async extraAdd(payload: any, res: Response) {
         try {
-            const {  id } = payload;
+            const { id } = payload;
             console.log(id);
 
             let addId = await db.Users.findOne({
-                where:{
+                where: {
                     id
                 }
             })
             let getAmount = await db.ExtraAdds.findOne({
-                where:{
-                    id:1
+                where: {
+                    id: 1
                 }
             })
             console.log(getAmount.amount);
-            
+
             if (addId) {
-                if(addId.EAWatch == null){
-                    console.log(addId.balance,"====",getAmount.amount);
-                    
+                if (addId.EAWatch == null) {
+                    console.log(addId.balance, "====", getAmount.amount);
+
                     let sun = addId.balance + getAmount.amount
-                    await addId.update({EAWatch : 1,EATime:Date.now(),balance : sun})
+                    await addId.update({ EAWatch: 1, EATime: Date.now(), balance: sun })
 
                     // add to dailyreward table
 
                     let addrew = await db.DailyRewards.create({
-                        userId:addId.id,rewardAmount:getAmount.amount
-                    }) 
-                commonController.successMessage(addId, "Data added", res)
-                return; 
+                        userId: addId.id, rewardAmount: getAmount.amount
+                    })
+                    commonController.successMessage(addId, "Data added", res)
+                    return;
                 }
-                console.log(addId.EAWatch,"????");
+                console.log(addId.EAWatch, "????");
                 let sun = addId.balance + getAmount.amount
-                 await addId.update({EAWatch : addId.EAWatch + 1,EATime:Date.now(),balance : sun})
-                 let addrew = await db.DailyRewards.create({
-                    userId:addId.id,rewardAmount:getAmount.amount
-                }) 
+                await addId.update({ EAWatch: addId.EAWatch + 1, EATime: Date.now(), balance: sun })
+                let addrew = await db.DailyRewards.create({
+                    userId: addId.id, rewardAmount: getAmount.amount
+                })
+
+                  // add user to matrix
+                  console.log("matric work");
+                  
+                  var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
+                  var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+
+                  let dateObject = new Date(data1[0].createdAt);
+                  let dateString = dateObject.toISOString();
+                  let day = dateString.slice(8, 10);
+                  day = day.replace(/^0/, '');
+                  const d = new Date();
+                  let currentDate = d.getDate();
+                  if (currentDate == JSON.parse(day)) {
+                      var sql1 = `UPDATE Matrics SET dailyRewardTotal = dailyRewardTotal + 1`;
+                      var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+                  } else {
+                  let addData = await db.Matrics.create({
+                      todayUsers:0,
+                      cashAppTotal:0,
+                      dailyRewardTotal:1,
+                      totalMatchS1:0,
+                      totalMatchS2:0,
+                      totalMatchS3:0,
+                      totalMatch:0,
+                      gamezopeTotal:0
+                    }) 
+                  }
+                  
                 commonController.successMessage(addId, "Data added", res)
             } else {
                 commonController.successMessage({}, "something went wrong", res)
@@ -257,55 +288,96 @@ class CodeController {
         }
     }
     async test(payload: any, res: Response) {
-        const { heading,message } = payload;
-        console.log(payload,"payyy");
-        
+        const { heading, message } = payload;
+        console.log(payload, "payyy");
+
         try {
             console.log("yes");
-            const client = new OneSignal.Client(
-              process.env.onesignalappid, // appId
-              process.env.onesignalapikey // apiKey
-            );
-        
-            const notification = {
-              headings: { en: `${heading}` },
-              contents: {
-                en: `${message}`,
-              },
-              included_segments: ["Active Subscriptions"],
-            //   include_external_user_ids: ["ARLWJLR07"],
-            //   include_external_user_ids: ["ARL1XOH5W","ARLWJLR07"],
-              large_icon: "http://54.243.167.175:5000/avatars/testing.jpeg.png",
-              big_picture: "https://www.researchgate.net/profile/Cataldo-Guaragnella/publication/235406965/figure/fig1/AS:393405046771720@1470806480985/Original-image-256x256-pixels_Q320.jpg",
-              data: {
-                postId: '123',
-              },
-            };
-        
-            const res1 = await client.createNotification(notification);
-            console.log(res, "Notification sent successfully");
-            commonController.successMessage(res1,"user not found",res)
-          } catch (error) {
+
+
+            var sql1 = `SELECT COUNT(*) AS cashapp FROM Users WHERE DATE(lastName) = null`;
+            var reward = await MyQuery.query(sql1, {
+                type: QueryTypes.SELECT
+            });
+
+
+
+            console.log("done", reward);
+
+
+        } catch (error) {
             console.error(error);
             commonController.errorMessage("Not Send", res);
-          }
-      
+        }
+
     }
     async updateActive(payload: any, res: Response) {
         try {
-            const { id} = payload;
-           let check = await db.Users.findOne({
-            where:{
-                id
+            const { id } = payload;
+            let check = await db.Users.findOne({
+                where: {
+                    id
+                }
+            })
+            if (!check) {
+                commonController.successMessage({}, "user not found", res)
+            } else {
+                await check.update({ active: 1, lastName: Date.now() })
+                var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
+                var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+
+                let dateObject = new Date(data1[0].createdAt);
+                let dateString = dateObject.toISOString();
+                let day = dateString.slice(8, 10);
+                day = day.replace(/^0/, '');
+                const d = new Date();
+                let currentDate = d.getDate();
+                if (currentDate == JSON.parse(day)) {
+                    var sql1 = `UPDATE Matrics SET cashAppTotal = cashAppTotal + 1`;
+                    var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+                } else {
+                let addData = await db.Matrics.create({
+                    todayUsers:0,
+                    cashAppTotal:2,
+                    dailyRewardTotal:0,
+                    totalMatchS1:0,
+                    totalMatchS2:0,
+                    totalMatchS3:0,
+                    totalMatch:0,
+                    gamezopeTotal:0
+                  }) 
+                }
+                commonController.successMessage(check, "data updated successfully", res)
             }
-           })
-           if(!check){
-            commonController.successMessage({},"user not found",res)
-           }else{
-            await check.update({active:1})
-            commonController.successMessage(check,"data updated successfully",res)
-           }
-    
+
+        } catch (e) {
+            console.log(e);
+        }
+    }
+    async firstreward(payload: any, res: Response) {
+        try {
+            const { id } = payload;
+            let check = await db.Users.findOne({
+                where: {
+                    id
+                }
+            })
+            if (!check) {
+                commonController.successMessage({}, "user not found", res)
+            } else {
+
+                let getReward = await db.ExtraAdds.findOne({
+                    where:{
+                        id:1
+                    }
+                })
+                console.log(getReward.gamezopArray,"first reward");
+                
+                let x = check.balance + JSON.parse(getReward.gamezopArray)
+                await check.update({ firstReward: 1, balance: x })
+                commonController.successMessage(check, "data updated successfully", res)
+            }
+
         } catch (e) {
             console.log(e);
         }
@@ -318,23 +390,31 @@ class CodeController {
                     id
                 }
             });
-    
+
             if (!check) {
                 commonController.successMessage({}, "User not found", res);
             } else {
                 let a = check.gamezopAdd + 1;
-               
+
                 let checkAdd2 = await db.ExtraAdds.findOne({
                     where: {
                         id: 2
                     }
                 });
-    
+
                 let status: number;
                 let countDownTime: number;
                 let amount: number;
-    
-                if (check.gamezopAdd >= checkAdd2.perDay) {
+
+                let check1 = await db.Users.findOne({
+                    where: {
+                        id
+                    }
+                });
+                console.log(check1.gamezopAdd, "user gz use");
+                console.log(checkAdd2.perDay, "user gz??????");
+
+                if (a >= checkAdd2.perDay) {
                     status = 0;
                     countDownTime = checkAdd2.countDownTime;
                     amount = checkAdd2.amount;
@@ -346,87 +426,123 @@ class CodeController {
                 let b = check.balance + checkAdd2.amount
                 await check.update({
                     gamezopAdd: a,
-                    balance:b
-                   
+                    balance: b
+
                 });
-    
-             
+
+
                 const responseData = {
                     ...check.dataValues,
                     status,
                     amount,
                     countDownTime
                 };
-    
-                console.log(responseData, "check data");
-                
+
+                console.log("matric work");
+                  
+                var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
+                var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+
+                let dateObject = new Date(data1[0].createdAt);
+                let dateString = dateObject.toISOString();
+                let day = dateString.slice(8, 10);
+                day = day.replace(/^0/, '');
+                const d = new Date();
+                let currentDate = d.getDate();
+                if (currentDate == JSON.parse(day)) {
+                    var sql1 = `UPDATE Matrics SET gamezopeTotal = gamezopeTotal + 1`;
+                    var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+                } else {
+                let addData = await db.Matrics.create({
+                    todayUsers:0,
+                    cashAppTotal:0,
+                    dailyRewardTotal:0,
+                    totalMatchS1:0,
+                    totalMatchS2:0,
+                    totalMatchS3:0,
+                    totalMatch:0,
+                    gamezopeTotal:1
+                  }) 
+                }
+
                 commonController.successMessage(responseData, "Data updated successfully", res);
             }
-    
+
         } catch (e) {
             console.log(e);
             // Handle the error appropriately
             commonController.errorMessage("Error occurred", res);
         }
     }
-    
+
     async addgamezop(payload: any, res: Response) {
         try {
             const { id } = payload;
             let getGs = await db.Users.findOne({
-                where:{
-                    id
-                }
-              })
-              let checkAdd2 = await db.ExtraAdds.findOne({
-                where:{
-                    id:2
-                }
-              })
-              console.log(checkAdd2.perDay);
-              const gamezopData: Record<string, any> = {};
-    
-              let gamezopData1: Record<string, any>;
-              
-              if (getGs.gamezopAdd >= checkAdd2.perDay) {
-                gamezopData1 = {
-                  status: 0,
-                  perDay: checkAdd2.perDay,
-                  time: checkAdd2.time,
-                  amount: checkAdd2.amount,
-                  countDownTime: checkAdd2.countDownTime,
-                };
-              } else {
-                gamezopData1 = {
-                  status: 1,
-                  perDay: checkAdd2.perDay,
-                  time: checkAdd2.time,
-                  amount: checkAdd2.amount,
-                  countDownTime: checkAdd2.countDownTime,
-                };
-              }
-              
-              var sql = `select link from Advertisements`;
-              var links = await MyQuery.query(sql, { type: QueryTypes.SELECT });
-              // Now you can use gamezopData1
-            //   console.log(gamezopData1,"aalalalala");
-              commonController.successMessage({gamezopData1,links}, "data get successfully", res)
+                where: {
+                    id,
+                },
+            });
+            let checkAdd2 = await db.ExtraAdds.findOne({
+                where: {
+                    id: 2,
+                },
+            });
 
+            const gamezopData: Record<string, any> = {};
+
+            let gamezopData1: Record<string, any>;
+
+            if (getGs.gamezopAdd >= checkAdd2.perDay) {
+                gamezopData1 = {
+                    status: 0,
+                    perDay: checkAdd2.perDay,
+                    time: checkAdd2.time,
+                    amount: checkAdd2.amount,
+                    countDownTime: checkAdd2.countDownTime,
+                };
+            } else {
+                gamezopData1 = {
+                    status: 1,
+                    perDay: checkAdd2.perDay,
+                    time: checkAdd2.time,
+                    amount: checkAdd2.amount,
+                    countDownTime: checkAdd2.countDownTime,
+                };
+            }
+
+            let sun = await db.ExtraAdds.findOne({
+                where: {
+                    id: 2,
+                },
+            });
+
+            // Convert the string representation of links to a JSON array
+            const linksArray = JSON.parse(sun.gamezopArray);
+
+            commonController.successMessage(
+                { gamezopData1, links: linksArray },
+                "data get successfully",
+                res
+            );
         } catch (e) {
             console.log(e);
         }
     }
-    
+
+
+
+
     // admin login
 
-   async adminLogin(payload: any, res: Response) {
+    async adminLogin(payload: any, res: Response) {
         try {
             const { email, password } = payload;
             console.log(process.env.email, process.env.password);
-    
+
             if (email == process.env.email) {
                 const storedPassword = process.env.password;
-    
+
                 if (storedPassword) {
                     if (await Encrypt.comparePassword(password.toString(), storedPassword)) {
                         const token = jwt.sign(
@@ -449,15 +565,15 @@ class CodeController {
     }
     async getDeviceId(payload: any, res: Response) {
         try {
-            const {deviceId} = payload;
-            console.log(deviceId,"deviceId api hit noe");
-   
+            const { deviceId } = payload;
+            console.log(deviceId, "deviceId api hit noe");
+
             let check = await db.Users.findOne({
-                where:{
+                where: {
                     deviceId
                 }
             })
-            if(check){
+            if (check) {
                 const token = jwt.sign(
                     {
                         id: check.id,
@@ -466,9 +582,9 @@ class CodeController {
                     process.env.TOKEN_SECRET,
                     { expiresIn: '30d' }
                 );
-                commonController.successMessage(token,"user find successfully",res)
-            }else{
-                commonController.successMessage({},"not found",res)
+                commonController.successMessage(token, "user find successfully", res)
+            } else {
+                commonController.successMessage({}, "not found", res)
             }
 
         } catch (e) {
@@ -478,27 +594,27 @@ class CodeController {
     }
     async checkUser(payload: any, res: Response) {
         try {
-            const {deviceId,id} = payload;
-            
+            const { deviceId, id } = payload;
+
             let check = await db.Users.findOne({
-                where:{
-                   id
+                where: {
+                    id
                 }
-               
+
             })
-             
-            if(!check){
-                 let addId = await db.Users.create({
+
+            if (!check) {
+                let addId = await db.Users.create({
                     deviceId
-                 })
-                 commonController.successMessage(addId,"Id added",res)
-            }else{
-                await check.update({deviceId,cronDate:Date.now()})
+                })
+                commonController.successMessage(addId, "Id added", res)
+            } else {
+                await check.update({ deviceId, cronDate: Date.now() })
                 const token = jwt.sign(
                     {
                         id: check.id,
                         mobileNumber: check.mobileNumber,
-                        
+
                     },
                     process.env.TOKEN_SECRET,
                     { expiresIn: '30d' }
@@ -543,236 +659,249 @@ class CodeController {
             commonController.successMessage({}, "User Not Found", res)
         }
     }
-   async getProfile(payload: any, res: Response) {
+    async getProfile(payload: any, res: Response) {
         try {
             const { id } = payload;
-            console.log(id, "get profile hit now")
+            console.log(id, "get profile hit now");
+    
+            // Fetch user data
             var sql = `select a.firstName,a.lastName,a.dob,a.mobileNumber,a.avatar,a.balance,a.totalWinning as totalwinning,
-            a.winMatch as winMatch,a.totalMatch as totalgame,
-                         a.uId,a.active as verify from Users a
-                         where a.id = ${id}`;
+                a.winMatch as winMatch,a.totalMatch as totalgame,a.firstReward,
+                a.uId,a.active as verify from Users a
+                where a.id = ${id}`;
+    
             var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
-
-          
-            
-            commonController.successMessage(data, "user data get successfully", res)
+            console.log(data, "re3s");
+    
+            // Fetch gamezopArray
+            var sql1 = `select gamezopArray from ExtraAdds where id = 1`;
+            var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+            console.log(data1, "gzd");
+    
+            // Add gamezopArray to the user data
+            if (data.length > 0 && data1.length > 0) {
+                data[0].firstRewardAmount = parseInt(data1[0].gamezopArray);
+            }
+    
+            commonController.successMessage(data, "user data get successfully", res);
         } catch (e) {
-            commonController.errorMessage(e, res)
-            console.log(e, "error here")
+            commonController.errorMessage(e, res);
+            console.log(e, "error here");
         }
     }
-  async getUiInfo(payload: any, res: Response) {
+    
+    async getUiInfo(payload: any, res: Response) {
         try {
-          const { id, SegId } = payload;
-         console.log(payload,"pay");
-         let tp
-         let tp1
-          let getGs = await db.Users.findOne({
-            where:{
-                id
-            }
-          })
-          let sun =JSON.parse(getGs.gs1);
-          let sun1 = JSON.parse(getGs.gs2)
-          let sun2 = JSON.parse(getGs.gs3)
-          let sun3 = JSON.parse(getGs.gs4)
-          let sun4 = JSON.parse(getGs.gs5)
-      
-          // Retrieve data from the database
-          const sqlSlots = `SELECT * FROM GameSlotes WHERE active = 1 and type = ${SegId}`;
-          const data = await MyQuery.query(sqlSlots, { type: QueryTypes.SELECT });
-      
-          for (let i = 0; i < data.length; i++) {
-            
-            
-            if (sun == null) {
-                
-                 tp = 0
-                 tp1 =0
-                 
-            } else if(data[i].id ==sun[0].id ){
-               
-                
-            tp = sun[0].tp
-            tp1 =sun[0].createdAt
+            const { id, SegId } = payload;
+            console.log(payload, "pay");
+            let tp
+            let tp1
+            let getGs = await db.Users.findOne({
+                where: {
+                    id
+                }
+            })
+            let sun = JSON.parse(getGs.gs1);
+            let sun1 = JSON.parse(getGs.gs2)
+            let sun2 = JSON.parse(getGs.gs3)
+            let sun3 = JSON.parse(getGs.gs4)
+            let sun4 = JSON.parse(getGs.gs5)
 
-            }else if(sun1 == null){
-               
-                tp = 0
-                tp1 =0
-            }
-            else if(data[i].id == sun1[0].id){
-               
-                
-                tp = sun1[0].tp
-                tp1 =sun1[0].createdAt
-            }else if(sun2 == null){
-               
-                tp = 0
-                tp1 =0
-            }else if(data[i].id == sun2[0].id){
-               
-                
-                tp = sun2[0].tp
-                tp1 =sun2[0].createdAt
-            }else if(sun3 == null){
-                tp = 0
-                tp1 =0
-            }else if(data[i].id == sun3[0].id){
-                tp = sun3[0].tp
-                tp1 =sun3[0].createdAt
-            }else if(sun4 == null){
-                tp = 0
-                tp1 =0
-            }else if(data[i].id == sun4[0].id){
-                tp = sun4[0].tp
-                tp1 =sun4[0].createdAt
+            // Retrieve data from the database
+            const sqlSlots = `SELECT * FROM GameSlotes WHERE active = 1 and type = ${SegId}`;
+            const data = await MyQuery.query(sqlSlots, { type: QueryTypes.SELECT });
+
+            for (let i = 0; i < data.length; i++) {
+
+
+                if (sun == null) {
+
+                    tp = 0
+                    tp1 = 0
+
+                } else if (data[i].id == sun[0].id) {
+
+
+                    tp = sun[0].tp
+                    tp1 = sun[0].createdAt
+
+                } else if (sun1 == null) {
+
+                    tp = 0
+                    tp1 = 0
+                }
+                else if (data[i].id == sun1[0].id) {
+
+
+                    tp = sun1[0].tp
+                    tp1 = sun1[0].createdAt
+                } else if (sun2 == null) {
+
+                    tp = 0
+                    tp1 = 0
+                } else if (data[i].id == sun2[0].id) {
+
+
+                    tp = sun2[0].tp
+                    tp1 = sun2[0].createdAt
+                } else if (sun3 == null) {
+                    tp = 0
+                    tp1 = 0
+                } else if (data[i].id == sun3[0].id) {
+                    tp = sun3[0].tp
+                    tp1 = sun3[0].createdAt
+                } else if (sun4 == null) {
+                    tp = 0
+                    tp1 = 0
+                } else if (data[i].id == sun4[0].id) {
+                    tp = sun4[0].tp
+                    tp1 = sun4[0].createdAt
+                }
+
+
+                if (tp1 > 0) {
+                    const date = new Date(tp1);
+
+                    const createdAt = moment(tp1).valueOf(); // Convert the database timestamp to milliseconds
+                    const currentTime = moment().valueOf(); // Get the current time in milliseconds
+
+
+                    // Ensure createdAt is greater than or equal to currentTime
+                    const remainingTimeInMinutes = Math.floor((Math.max(createdAt, currentTime) - Math.min(createdAt, currentTime)) / 1000);
+
+
+
+                    if (data[i].totalPlay <= tp) {
+
+
+                        data[i].active1 = 0;
+                    }
+
+
+                    if (data[i].timeToPlay * 60 > remainingTimeInMinutes) {
+
+                        data[i].active = 2;
+                        data[i].createdAt = remainingTimeInMinutes;
+                        data[i].reminTime = data[i].timeToPlay * 60 - remainingTimeInMinutes;
+                    }
+                    if (data[i].timeToPlay * 60 < remainingTimeInMinutes) {
+
+                        data[i].active = 1;
+                        data[i].createdAt = remainingTimeInMinutes;
+                    }
+                }
             }
 
-      
-            if (tp1 > 0) {
-                const date = new Date(tp1);
-            
-                const createdAt = moment(tp1).valueOf(); // Convert the database timestamp to milliseconds
-                const currentTime = moment().valueOf(); // Get the current time in milliseconds
-              
-                
-                // Ensure createdAt is greater than or equal to currentTime
-                const remainingTimeInMinutes = Math.floor((Math.max(createdAt, currentTime) - Math.min(createdAt, currentTime)) / 1000);
-                
-               
-               
-              if (data[i].totalPlay <= tp) {
-               
-                
-                data[i].active1 = 0;
-              }
-             
-      
-              if (data[i].timeToPlay * 60  > remainingTimeInMinutes) {
-               
-                data[i].active = 2;
-                data[i].createdAt = remainingTimeInMinutes;
-                data[i].reminTime = data[i].timeToPlay * 60 - remainingTimeInMinutes;
-              }
-              if (data[i].timeToPlay * 60 < remainingTimeInMinutes) {
-                 
-                data[i].active = 1;
-                data[i].createdAt = remainingTimeInMinutes;
-              }
-            }
-          }
-      
-          const sqlAdvertisement = `SELECT * FROM Advertisements`;
-          const sqlSocialLink = `SELECT instagram, rateUs, termscondition, privancyPolicy FROM SocialLinks`;
-          const sqlMinMax = `SELECT maximum, minimum, withdrawFee,String FROM SocialLinks`;
+            const sqlAdvertisement = `SELECT * FROM Advertisements`;
+            const sqlSocialLink = `SELECT instagram, rateUs, termscondition, privancyPolicy FROM SocialLinks`;
+            const sqlMinMax = `SELECT maximum, minimum, withdrawFee,String FROM SocialLinks`;
 
-          // extra add code here
-          let checkAdd = await db.ExtraAdds.findOne({
-            where:{
-                id:1
-            }
-          })
-          console.log(checkAdd.id,"ExtraAdds id");
+            // extra add code here
+            let checkAdd = await db.ExtraAdds.findOne({
+                where: {
+                    id: 1
+                }
+            })
+            console.log(checkAdd.id, "ExtraAdds id");
 
-          let arra: any = []
-          console.log(getGs.EATime,"eatime");
-          const date = new Date(getGs.EATime);
-            
-          const createdAt = moment(getGs.EATime).valueOf(); 
-          const currentTime = moment().valueOf(); 
-          const remainingTimeInMinutes = Math.floor((Math.max(createdAt, currentTime) - Math.min(createdAt, currentTime)) / 1000);
-           console.log(checkAdd.time * 60,"reererere   second due",remainingTimeInMinutes);
-           console.log("2nd data",getGs.EAWatch,checkAdd.perDay);
-           
-          if(getGs.EAWatch >= checkAdd.perDay){
-            console.log("1111");
-            
-            const extraAddData = {
-                "time":checkAdd.time,
-                "amount":checkAdd.amount,
-                "perDay":checkAdd.perDay,
-                "status":"0",
-                "countDownTime":checkAdd.countDownTime
-            }
-            arra.push(extraAddData)
-          }else if(checkAdd.time * 60 > remainingTimeInMinutes){
-            console.log(checkAdd.time * 60,"pending time");
+            let arra: any = []
+            console.log(getGs.EATime, "eatime");
+            const date = new Date(getGs.EATime);
 
-            if(remainingTimeInMinutes == 0){
+            const createdAt = moment(getGs.EATime).valueOf();
+            const currentTime = moment().valueOf();
+            const remainingTimeInMinutes = Math.floor((Math.max(createdAt, currentTime) - Math.min(createdAt, currentTime)) / 1000);
+            console.log(checkAdd.time * 60, "reererere   second due", remainingTimeInMinutes);
+            console.log("2nd data", getGs.EAWatch, checkAdd.perDay);
+
+            if (getGs.EAWatch >= checkAdd.perDay) {
+                console.log("1111");
+
                 const extraAddData = {
-                    "time":checkAdd.time,
-                    "amount":checkAdd.amount,
-                    "perDay":checkAdd.perDay,
-                    "status":"1",
-                    "countDownTime":checkAdd.countDownTime
+                    "time": checkAdd.time,
+                    "amount": checkAdd.amount,
+                    "perDay": checkAdd.perDay,
+                    "status": "0",
+                    "countDownTime": checkAdd.countDownTime
                 }
                 arra.push(extraAddData)
-            }else{
+            } else if (checkAdd.time * 60 > remainingTimeInMinutes) {
+                console.log(checkAdd.time * 60, "pending time");
+
+                if (remainingTimeInMinutes == 0) {
+                    const extraAddData = {
+                        "time": checkAdd.time,
+                        "amount": checkAdd.amount,
+                        "perDay": checkAdd.perDay,
+                        "status": "1",
+                        "countDownTime": checkAdd.countDownTime
+                    }
+                    arra.push(extraAddData)
+                } else {
+                    const extraAddData = {
+                        "time": checkAdd.time,
+                        "amount": checkAdd.amount,
+                        "perDay": checkAdd.perDay,
+                        "status": "2",
+                        "remainTime": checkAdd.time * 60 - remainingTimeInMinutes,
+                        "countDownTime": checkAdd.countDownTime
+                    }
+                    arra.push(extraAddData)
+                }
+
+            } else {
                 const extraAddData = {
-                    "time":checkAdd.time,
-                    "amount":checkAdd.amount,
-                    "perDay":checkAdd.perDay,
-                    "status":"2",
-                    "remainTime":checkAdd.time * 60 - remainingTimeInMinutes,
-                    "countDownTime":checkAdd.countDownTime
+                    "time": checkAdd.time,
+                    "amount": checkAdd.amount,
+                    "perDay": checkAdd.perDay,
+                    "status": "1",
+                    "countDownTime": checkAdd.countDownTime
                 }
                 arra.push(extraAddData)
             }
-           
-          }else{
-            const extraAddData = {
-                "time":checkAdd.time,
-                "amount":checkAdd.amount,
-                "perDay":checkAdd.perDay,
-                "status":"1",
-                "countDownTime":checkAdd.countDownTime
-            }
-            arra.push(extraAddData)
-          }
-         
-           
-          
-          
-      
-          const [slots, advertisement, socialLink, minMax] = await Promise.all([
-            data,
-            MyQuery.query(sqlAdvertisement, { type: QueryTypes.SELECT }),
-            MyQuery.query(sqlSocialLink, { type: QueryTypes.SELECT }),
-            MyQuery.query(sqlMinMax, { type: QueryTypes.SELECT }),
-          ]);
-      
-          // console.log(slots);
-          let t = Math.floor(Math.random() * (2000 - 200 + 1) + 200);
-      
-          // Calculate the range for distribution (50 to 60 percent of t)
-          const distributionRange = Math.floor(Math.random() * (60 - 50 + 1) + 50) / 100;
-          const distributionAmount = Math.floor(t * distributionRange);
-      
-          // Distribute the amount randomly among the objects
-          data.forEach((obj) => {
-            obj.random = 0;
-            obj.random += Math.floor(Math.random() * distributionAmount); // Remove decimal values
-          });
-      
-          const onlineUsers = {
-            random: t + 300,
-          };
 
-        
-          
 
-      
-          // Send the modified data in the response
-          commonController.successMessage({ slots: slots, advertisement, socialLink, minMax, onlineUsers,...arra }, "uiinfo get successfully", res);
+
+
+
+            const [slots, advertisement, socialLink, minMax] = await Promise.all([
+                data,
+                MyQuery.query(sqlAdvertisement, { type: QueryTypes.SELECT }),
+                MyQuery.query(sqlSocialLink, { type: QueryTypes.SELECT }),
+                MyQuery.query(sqlMinMax, { type: QueryTypes.SELECT }),
+            ]);
+
+            // console.log(slots);
+            let t = Math.floor(Math.random() * (2000 - 200 + 1) + 200);
+
+            // Calculate the range for distribution (50 to 60 percent of t)
+            const distributionRange = Math.floor(Math.random() * (60 - 50 + 1) + 50) / 100;
+            const distributionAmount = Math.floor(t * distributionRange);
+
+            // Distribute the amount randomly among the objects
+            data.forEach((obj) => {
+                obj.random = 0;
+                obj.random += Math.floor(Math.random() * distributionAmount); // Remove decimal values
+            });
+
+            const onlineUsers = {
+                random: t + 300,
+            };
+
+
+
+
+
+            // Send the modified data in the response
+            commonController.successMessage({ slots: slots, advertisement, socialLink, minMax, onlineUsers, ...arra }, "uiinfo get successfully", res);
         } catch (e) {
             console.log(e);
-            
-          commonController.errorMessage(e, res);
+
+            commonController.errorMessage(e, res);
         }
-      }
-      
-    
+    }
+
+
     async addRoom(payload: any, res: Response) {
         try {
             const { id, playerIds, player } = payload;
@@ -1042,21 +1171,21 @@ class CodeController {
                     } else {
                         console.log("3");
                         let x = amount;
-                        
+
                         // minus balance
                         let xn = JSON.parse(amount)
                         let minusBalance = checkUser.balance - xn
                         await checkUser.update({ balance: minusBalance })
 
                         let addEntry = await db.Withdraws.create({
-                            userId: id, money:xn, pamentMethod: 1, totalAmount: amount, paymentMethod, active: 0, transactionId: randomTransactionId // 0 mean pending 1 mean done
+                            userId: id, money: xn, pamentMethod: 1, totalAmount: amount, paymentMethod, active: 0, transactionId: randomTransactionId // 0 mean pending 1 mean done
                         })
                         commonController.successMessage(addEntry, "Data Added Successfully", res)
                     }
 
                 } else {
                     console.log("1 ure a gya");
-                    
+
 
                     // minus balance
                     let xn = JSON.parse(amount)
@@ -1064,7 +1193,7 @@ class CodeController {
                     await checkUser.update({ balance: minusBalance })
 
                     let addEntry = await db.Withdraws.create({
-                        userId: id, money:amount, pamentMethod: 1, totalAmount: amount, paymentMethod, active: 0, transactionId: randomTransactionId // 0 mean pending 1 mean done
+                        userId: id, money: amount, pamentMethod: 1, totalAmount: amount, paymentMethod, active: 0, transactionId: randomTransactionId // 0 mean pending 1 mean done
                     })
                     commonController.successMessage(addEntry, "Data Added Successfully", res)
                 }
@@ -1075,8 +1204,8 @@ class CodeController {
 
 
         } catch (e) {
-            console.log(e,"error");
-            
+            console.log(e, "error");
+
             commonController.errorMessage(e, res)
         }
     }
@@ -1162,7 +1291,7 @@ class CodeController {
     }
     async addPerFor(payload: any, res: Response) {
         try {
-            const { id, win, lose, draw, leave, amount, position, players,gsId,count  } = payload;
+            const { id, win, lose, draw, leave, amount, position, players, gsId, count } = payload;
             console.log(payload, "pay here");
 
             // // set time
@@ -1192,13 +1321,13 @@ class CodeController {
 
             })
             if (checkUser) {
-                
+
                 let addtototal = checkUser.totalMatch + 1
-              
-                  await checkUser.update({totalMatch: addtototal,dob:Date.now()})
+
+                await checkUser.update({ totalMatch: addtototal, dob: Date.now() })
                 let addotp = await db.Performances.create({
                     userId: checkUser.id,
-                    win, lose, draw, leave, amount, position, players, time: formattedDateTime,gsId ,count
+                    win, lose, draw, leave, amount, position, players, time: formattedDateTime, gsId, count
                 })
                 if (win == 1) {
                     console.log("yes win working");
@@ -1206,146 +1335,146 @@ class CodeController {
                     let total = checkUser.balance + sun
                     let addWin = checkUser.winMatch + 1
                     let winningT = checkUser.totalWinning + sun
-                    await checkUser.update({ balance: total,winMatch: addWin,totalWinning: winningT })
+                    await checkUser.update({ balance: total, winMatch: addWin, totalWinning: winningT })
                 }
 
                 // add extra work
-            console.log(checkUser.segmentType,"ah ");
-            
-                  let check  = await db.GameSlotes.findAll({
-                    where:{
-                        type:checkUser.segmentType
-                    }
-                  })
-                  console.log(check[0].id,"first");
-                  if(check[0].id == gsId){
-                    console.log(checkUser.gs1,"????");
-                    if(leave == 1){
-                        console.log("yes leave == 1 working");
-                        
+                console.log(checkUser.segmentType, "ah ");
 
-                    }else if(checkUser.gs1 == null){
+                let check = await db.GameSlotes.findAll({
+                    where: {
+                        type: checkUser.segmentType
+                    }
+                })
+                console.log(check[0].id, "first");
+                if (check[0].id == gsId) {
+                    console.log(checkUser.gs1, "????");
+                    if (leave == 1) {
+                        console.log("yes leave == 1 working");
+
+
+                    } else if (checkUser.gs1 == null) {
                         console.log("yes");
                         const addSun = {
-                            id:gsId,
-                        tp:1,
-                        createdAt:Date.now()
+                            id: gsId,
+                            tp: 1,
+                            createdAt: Date.now()
                         }
                         console.log("add");
-                        
-                        await checkUser.update({gs1:JSON.stringify([addSun])})
-                        
-                    }else {
-                        
+
+                        await checkUser.update({ gs1: JSON.stringify([addSun]) })
+
+                    } else {
+
                         const existingArray = JSON.parse(checkUser.gs1);
-                      
+
                         console.log(existingArray, "no");
-                      
-                      
+
+
                         existingArray[0].tp += 1;
                         existingArray[0].createdAt = Date.now();
-                      
-                      
+
+
                         await checkUser.update({
-                          gs1: JSON.stringify(existingArray)
+                            gs1: JSON.stringify(existingArray)
                         });
                         console.log("work");
-                        
-                      }
-                   
-                  }else if(check[1].id == gsId){
-                    if(leave == 1){
-                        console.log("yes leave == 1 working");
-                        
 
-                    }else if(checkUser.gs2 == null){
+                    }
+
+                } else if (check[1].id == gsId) {
+                    if (leave == 1) {
+                        console.log("yes leave == 1 working");
+
+
+                    } else if (checkUser.gs2 == null) {
                         const addSun = {
-                            id:gsId,
-                            tp:1,
-                            createdAt:Date.now()
-                            }
-                            await checkUser.update({gs2:JSON.stringify([addSun])})
-                    }else{
+                            id: gsId,
+                            tp: 1,
+                            createdAt: Date.now()
+                        }
+                        await checkUser.update({ gs2: JSON.stringify([addSun]) })
+                    } else {
                         const existingArray = JSON.parse(checkUser.gs2);
                         console.log(existingArray, "no");
                         existingArray[0].tp += 1;
                         existingArray[0].createdAt = Date.now();
                         await checkUser.update({
                             gs2: JSON.stringify(existingArray)
-                          });
-                          console.log("work");
+                        });
+                        console.log("work");
                     }
-                  }else if(check[2].id == gsId){
-                    if(leave == 1){
+                } else if (check[2].id == gsId) {
+                    if (leave == 1) {
                         console.log("yes leave == 1 working");
-                        
 
-                    }else if(checkUser.gs3 == null){
+
+                    } else if (checkUser.gs3 == null) {
                         const addSun = {
-                            id:gsId,
-                            tp:1,
-                            createdAt:Date.now()
-                            }
-                            await checkUser.update({gs3:JSON.stringify([addSun])})
-                        
-                    }else{
+                            id: gsId,
+                            tp: 1,
+                            createdAt: Date.now()
+                        }
+                        await checkUser.update({ gs3: JSON.stringify([addSun]) })
+
+                    } else {
                         const existingArray = JSON.parse(checkUser.gs3);
                         console.log(existingArray, "no");
                         existingArray[0].tp += 1;
                         existingArray[0].createdAt = Date.now();
                         await checkUser.update({
                             gs3: JSON.stringify(existingArray)
-                          });
-                          console.log("work");
+                        });
+                        console.log("work");
                     }
-                  }else if (check[3].id == gsId){
-                    if(leave == 1){
+                } else if (check[3].id == gsId) {
+                    if (leave == 1) {
                         console.log("yes leave == 1 working");
-                        
 
-                    }else if(checkUser.gs4 == null){
+
+                    } else if (checkUser.gs4 == null) {
                         const addSun = {
-                            id:gsId,
-                            tp:1,
-                            createdAt:Date.now()
-                            }
-                            await checkUser.update({gs4:JSON.stringify([addSun])})
-                        
-                    }else{
+                            id: gsId,
+                            tp: 1,
+                            createdAt: Date.now()
+                        }
+                        await checkUser.update({ gs4: JSON.stringify([addSun]) })
+
+                    } else {
                         const existingArray = JSON.parse(checkUser.gs4);
                         console.log(existingArray, "no");
                         existingArray[0].tp += 1;
                         existingArray[0].createdAt = Date.now();
                         await checkUser.update({
                             gs4: JSON.stringify(existingArray)
-                          });
-                          console.log("work");
+                        });
+                        console.log("work");
                     }
-                  }else if(check[4].id == gsId){
-                    if(leave == 1){
+                } else if (check[4].id == gsId) {
+                    if (leave == 1) {
                         console.log("yes leave == 1 working");
-                        
 
-                    }else if(checkUser.gs5 == null){
+
+                    } else if (checkUser.gs5 == null) {
                         const addSun = {
-                            id:gsId,
-                            tp:1,
-                            createdAt:Date.now()
-                            }
-                            await checkUser.update({gs5:JSON.stringify([addSun])})
-                        
-                    }else{
+                            id: gsId,
+                            tp: 1,
+                            createdAt: Date.now()
+                        }
+                        await checkUser.update({ gs5: JSON.stringify([addSun]) })
+
+                    } else {
                         const existingArray = JSON.parse(checkUser.gs5);
                         console.log(existingArray, "no");
                         existingArray[0].tp += 1;
                         existingArray[0].createdAt = Date.now();
                         await checkUser.update({
                             gs5: JSON.stringify(existingArray)
-                          });
-                          console.log("work");
+                        });
+                        console.log("work");
                     }
-                  }
-                  
+                }
+
                 commonController.successMessage(addotp, "Performance Added", res)
             } else {
                 commonController.successMessage({}, "user not found", res)
@@ -1442,32 +1571,32 @@ class CodeController {
             console.log(aa, "aa");
             // fix user 
 
-            if(mobileNumber == process.env.Number){
-                if(otp == process.env.Otp){
+            if (mobileNumber == process.env.Number) {
+                if (otp == process.env.Otp) {
                     console.log("yes work");
                     let checkUser = await db.Users.findOne({
-                     where: {
-                         mobileNumber: aa
-                     }
-                 })
-                 const token = jwt.sign(
-                     {
-                         id: checkUser.id,
-                         mobileNumber: checkUser.mobileNumber,
-                     },
-                     process.env.TOKEN_SECRET,
-                     { expiresIn: '30d' }
-                 );
-                 commonController.successMessage(token, "otp verified successfully", res)
+                        where: {
+                            mobileNumber: aa
+                        }
+                    })
+                    const token = jwt.sign(
+                        {
+                            id: checkUser.id,
+                            mobileNumber: checkUser.mobileNumber,
+                        },
+                        process.env.TOKEN_SECRET,
+                        { expiresIn: '30d' }
+                    );
+                    commonController.successMessage(token, "otp verified successfully", res)
                     return;
-                }else{
+                } else {
                     commonController.successMessage({}, "otp not verified", res)
                     return;
                 }
-                  
+
             }
 
-           
+
 
             let checkUser = await db.Users.findOne({
                 where: {
@@ -1632,7 +1761,7 @@ class CodeController {
 
         }
     }
-      // Your main function
+    // Your main function
     async sendotptomobile(payload, res) {
         try {
             const { mobileNumber, deviceId } = payload;
@@ -1657,23 +1786,23 @@ class CodeController {
                 commonController.successMessage(token, "User Login successfully", res);
             } else {
                 console.log("User not found");
-        //        var sql = `select * from SegPercentages`;
-        // var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
-        //         console.log(data[0].percentage,"first parameter");
-                
-                // const segmentPercentages: { [key: number]: number } = {
-                //     1: data[0].percentage,
-                //     2: data[1].percentage,
-                //     3: data[2].percentage,
-                // };
-                // const selectedValue = this.calculateSegmentBasedOnPercentage(segmentPercentages);
-                //   console.log(selectedValue,"here selected value");
-                  
+                var sql = `select * from SegPercentages`;
+                var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
+                console.log(data[0].percentage, "first parameter");
+
+                const segmentPercentages: { [key: number]: number } = {
+                    1: data[0].percentage,
+                    2: data[1].percentage,
+                    3: data[2].percentage,
+                };
+                const selectedValue = this.calculateSegmentBasedOnPercentage(segmentPercentages);
+                console.log(selectedValue, "here selected value");
+
                 const str = Math.random().toString(36).substr(2, 6).toUpperCase();
                 const userId = `ARL${str}`;
 
                 let adddata = await db.Users.create({
-                    mobileNumber, uId: userId, balance: 0, segmentType: 1
+                    mobileNumber, uId: userId, balance: 0, segmentType: selectedValue
                 });
 
                 const token = jwt.sign(
@@ -1684,6 +1813,44 @@ class CodeController {
                     process.env.TOKEN_SECRET,
                     { expiresIn: '30d' }
                 );
+
+                // add user to matrix
+                var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
+                var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+                
+             
+                
+                let dateObject = new Date(data1[0].createdAt);
+                let dateString = dateObject.toISOString();
+                let day = dateString.slice(8, 10);
+
+                day = day.replace(/^0/, '');
+             
+                
+                const d = new Date();
+                let currentDate = d.getDate();
+              
+    
+                if (currentDate == JSON.parse(day)) {
+                    var sql1 = `UPDATE Matrics SET todayUsers = todayUsers + 1`;
+                    var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+                
+                } else {
+                
+                let addData = await db.Matrics.create({
+                    todayUsers:1,
+                    cashAppTotal:0,
+                    dailyRewardTotal:0,
+                    totalMatchS1:0,
+                    totalMatchS2:0,
+                    totalMatchS3:0,
+                    totalMatch:0,
+                    gamezopeTotal:0
+                  })
+                
+                }
+
+              
                 commonController.successMessage(token, "User Login successfully", res);
             }
 

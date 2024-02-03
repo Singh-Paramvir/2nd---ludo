@@ -4,7 +4,7 @@ import {
 }  from 'sequelize';
 interface UserAttributes{
 firstName:string;
-lastName:string;
+lastName:Date;
 dob:Date;
 mobileNumber:string;
 avatar:string;
@@ -26,13 +26,14 @@ EAWatch:number;
 gamezopAdd:number;
 EAActive:boolean;
 EATime:Date;
+firstReward:boolean;
 
 }
 module.exports = (sequelize:any, DataTypes:any) => {
   class  Users extends Model<UserAttributes>
   implements UserAttributes {
     firstName!:string;
-    lastName!:string;
+    lastName!:Date;
     dob!:Date;
     mobileNumber!:string;
     avatar!: string;
@@ -54,6 +55,7 @@ module.exports = (sequelize:any, DataTypes:any) => {
     gamezopAdd!:number;
 EAActive!:boolean;
 EATime!:Date;
+firstReward!:boolean;
     
     /**
      * Helper method for defining associations.
@@ -66,7 +68,7 @@ EATime!:Date;
   };
   Users.init({
     firstName:{type:DataTypes.STRING,defaultValue:'User'},
-    lastName: {type:DataTypes.STRING},
+    lastName: {type:DataTypes.DATE},
     dob:{type:DataTypes.DATE},
     mobileNumber:{type:DataTypes.STRING},
     avatar:{type:DataTypes.STRING,defaultValue:0},
@@ -87,7 +89,8 @@ EATime!:Date;
     EAWatch:{type:DataTypes.INTEGER},
     gamezopAdd:{type:DataTypes.INTEGER},
     EAActive:{type:DataTypes.BOOLEAN},
-    EATime:{type:DataTypes.DATE}
+    EATime:{type:DataTypes.DATE},
+    firstReward:{type:DataTypes.BOOLEAN,defaultValue:0}
 
    
  

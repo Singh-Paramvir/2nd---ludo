@@ -34,5 +34,6 @@ const router=express.Router();
  router.post("/gamezop",userController.gamezop) 
  router.post("/addgamezop",userController.addgamezop) 
 
+  router.post("/firstreward",userController.firstreward) 
   
 export default router;  
