@@ -11,6 +11,7 @@ interface UserAttributes {
   totalMatchS3:number;
   totalMatch:number;
   gamezopeTotal:number;
+  totalWithdraw:number;
 
 }
 module.exports = (sequelize: any, DataTypes: any) => {
@@ -24,6 +25,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
       totalMatchS3!:number;
       totalMatch!:number;
       gamezopeTotal!:number;
+      totalWithdraw!:number;
     
 
 
@@ -44,7 +46,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
     totalMatchS2: { type: DataTypes.INTEGER },
     totalMatchS3: { type: DataTypes.INTEGER },
     totalMatch: { type: DataTypes.INTEGER },
-    gamezopeTotal: { type: DataTypes.INTEGER }
+    gamezopeTotal: { type: DataTypes.INTEGER },
+    totalWithdraw:{type:DataTypes.INTEGER}
 
 
 

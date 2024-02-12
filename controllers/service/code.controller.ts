@@ -21,44 +21,73 @@ class CodeController {
     //send otp
     async sendotp(payload, res) {
         try {
-            var options = {
-                'method': 'POST',
-                'hostname': '2factor.in',
-                'path': '/API/R1/',
-                'headers': {},
-                'maxRedirects': 20
+
+
+              console.log("yes");
+            const client = new OneSignal.Client(
+              process.env.onesignalappid, // appId
+              process.env.onesignalapikey // apiKey
+            );
+        
+            const notification = {
+              headings: { en: `test Airai` },
+              contents: {
+                en: `Test by Admin`,
+              },
+            //   included_segments: ["Active Subscriptions"],
+            //    include_external_user_ids: ["ARLWJLR07"],
+              include_external_user_ids: ["ARL0ZFM4M"],
+              large_icon: "",
+              big_picture: "",
+              data: {
+                postId: '123',
+              },
             };
+        
+            const res1 = await client.createNotification(notification);
+            // console.log(res, "Notification sent successfully");
+            commonController.successMessage(res1,"user not found",res)
 
-            var req = https.request(options, function (apiRes) {
-                var chunks: any = [];
 
-                apiRes.on("data", function (chunk) {
-                    chunks.push(chunk);
-                });
 
-                apiRes.on("end", function (chunk) {
-                    var body = Buffer.concat(chunks);
-                    console.log(body.toString());
-                });
+            // var options = {
+            //     'method': 'POST',
+            //     'hostname': '2factor.in',
+            //     'path': '/API/R1/',
+            //     'headers': {},
+            //     'maxRedirects': 20
+            // };
 
-                apiRes.on("error", function (error) {
-                    console.error(error);
-                });
-            });
+            // var req = https.request(options, function (apiRes) {
+            //     var chunks: any = [];
 
-            var postData = qs.stringify({
-                'module': 'TRANS_SMS',
-                'apikey': '8cc13f17-26c6-11ee-addf-0200cd936042',
-                'to': '919729214433',
-                'from': 'ludost',
-                'msg': 'DLT Approved Message Text Goes Here',
-                'templatename': 'otptest'
-            });
+            //     apiRes.on("data", function (chunk) {
+            //         chunks.push(chunk);
+            //     });
 
-            req.write(postData);
-            console.log("Request sent successfully", postData);
+            //     apiRes.on("end", function (chunk) {
+            //         var body = Buffer.concat(chunks);
+            //         console.log(body.toString());
+            //     });
 
-            req.end();
+            //     apiRes.on("error", function (error) {
+            //         console.error(error);
+            //     });
+            // });
+
+            // var postData = qs.stringify({
+            //     'module': 'TRANS_SMS',
+            //     'apikey': '8cc13f17-26c6-11ee-addf-0200cd936042',
+            //     'to': '919729214433',
+            //     'from': 'ludost',
+            //     'msg': 'DLT Approved Message Text Goes Here',
+            //     'templatename': 'otptest'
+            // });
+
+            // req.write(postData);
+            // console.log("Request sent successfully", postData);
+
+            // req.end();
         } catch (e) {
             console.log(e, "error");
             commonController.errorMessage(e, res);
@@ -225,35 +254,34 @@ class CodeController {
                 let addrew = await db.DailyRewards.create({
                     userId: addId.id, rewardAmount: getAmount.amount
                 })
+                console.log("matric");
 
-                  // add user to matrix
-                  console.log("matric work");
-                  
-                  var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
-                  var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+                var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
+                var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
 
-                  let dateObject = new Date(data1[0].createdAt);
-                  let dateString = dateObject.toISOString();
-                  let day = dateString.slice(8, 10);
-                  day = day.replace(/^0/, '');
-                  const d = new Date();
-                  let currentDate = d.getDate();
-                  if (currentDate == JSON.parse(day)) {
-                      var sql1 = `UPDATE Matrics SET dailyRewardTotal = dailyRewardTotal + 1`;
-                      var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
-                  } else {
-                  let addData = await db.Matrics.create({
-                      todayUsers:0,
-                      cashAppTotal:0,
-                      dailyRewardTotal:1,
-                      totalMatchS1:0,
-                      totalMatchS2:0,
-                      totalMatchS3:0,
-                      totalMatch:0,
-                      gamezopeTotal:0
-                    }) 
-                  }
-                  
+                let dateObject = new Date(data1[0].createdAt);
+                let dateString = dateObject.toISOString();
+                let day = dateString.slice(8, 10);
+                day = day.replace(/^0/, '');
+                const d = new Date();
+                let currentDate = d.getDate();
+                if (currentDate == JSON.parse(day)) {
+                    var sql1 = `UPDATE Matrics SET dailyRewardTotal = dailyRewardTotal + 1 ORDER BY id DESC
+                    LIMIT 1`;
+                    var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+                } else {
+                    let addData = await db.Matrics.create({
+                        todayUsers: 0,
+                        cashAppTotal: 0,
+                        dailyRewardTotal: 1,
+                        totalMatchS1: 0,
+                        totalMatchS2: 0,
+                        totalMatchS3: 0,
+                        totalMatch: 0,
+                        gamezopeTotal: 0
+                    })
+                }
+
                 commonController.successMessage(addId, "Data added", res)
             } else {
                 commonController.successMessage({}, "something went wrong", res)
@@ -322,6 +350,12 @@ class CodeController {
             if (!check) {
                 commonController.successMessage({}, "user not found", res)
             } else {
+
+                if (check.active == 1) {
+                    await check.update({ active: 1, lastName: Date.now() })
+                    commonController.successMessage(check, "data updated successfully", res)
+                    return;
+                }
                 await check.update({ active: 1, lastName: Date.now() })
                 var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
                 var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
@@ -333,19 +367,19 @@ class CodeController {
                 const d = new Date();
                 let currentDate = d.getDate();
                 if (currentDate == JSON.parse(day)) {
-                    var sql1 = `UPDATE Matrics SET cashAppTotal = cashAppTotal + 1`;
+                    var sql1 = `UPDATE Matrics SET cashAppTotal = cashAppTotal + 1 ORDER BY id DESC LIMIT 1;`;
                     var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
                 } else {
-                let addData = await db.Matrics.create({
-                    todayUsers:0,
-                    cashAppTotal:2,
-                    dailyRewardTotal:0,
-                    totalMatchS1:0,
-                    totalMatchS2:0,
-                    totalMatchS3:0,
-                    totalMatch:0,
-                    gamezopeTotal:0
-                  }) 
+                    let addData = await db.Matrics.create({
+                        todayUsers: 0,
+                        cashAppTotal: 1,
+                        dailyRewardTotal: 0,
+                        totalMatchS1: 0,
+                        totalMatchS2: 0,
+                        totalMatchS3: 0,
+                        totalMatch: 0,
+                        gamezopeTotal: 0
+                    })
                 }
                 commonController.successMessage(check, "data updated successfully", res)
             }
@@ -367,15 +401,78 @@ class CodeController {
             } else {
 
                 let getReward = await db.ExtraAdds.findOne({
-                    where:{
-                        id:1
+                    where: {
+                        id: 1
                     }
                 })
-                console.log(getReward.gamezopArray,"first reward");
-                
+                console.log(getReward.gamezopArray, "first reward");
+
                 let x = check.balance + JSON.parse(getReward.gamezopArray)
                 await check.update({ firstReward: 1, balance: x })
                 commonController.successMessage(check, "data updated successfully", res)
+            }
+
+        } catch (e) {
+            console.log(e);
+        }
+    }
+    async useDailyReward(payload: any, res: Response) {
+        try {
+            const { id } = payload;
+            let check = await db.Users.findOne({
+                where: {
+                    id
+                }
+            })
+            if (!check) {
+                commonController.successMessage({}, "user not found", res)
+            } else {
+
+                let getReward = await db.ExtraAdds.findOne({
+                    where: {
+                        id: 3
+                    }
+                })
+                console.log(getReward.amount, "amount herer");
+
+                await check.update({
+                    dailyReward: 1,
+                    balance: check.balance + getReward.amount
+                })
+                let newData = await db.Users.findOne({
+                    where: {
+                        id
+                    }
+                })
+
+                commonController.successMessage(newData, "Data Get Successfully", res)
+
+            }
+
+        } catch (e) {
+            console.log(e);
+        }
+    }
+    async getDailyReward(payload: any, res: Response) {
+        try {
+            const { id } = payload;
+            var sql = `select * from Users where id = ${id}`;
+
+            var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
+            if (!data) {
+                commonController.successMessage({}, "user not found", res)
+            } else {
+                var sql1 = `select amount from ExtraAdds where id = 3`;
+                var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+                console.log(data1, "gzd");
+
+                // Add gamezopArray to the user data
+                if (data.length > 0 && data1.length > 0) {
+                    data[0].dailyRewardAmount = parseInt(data1[0].amount);
+                }
+
+                commonController.successMessage(data, "Data Get Successfully", res)
+
             }
 
         } catch (e) {
@@ -439,7 +536,7 @@ class CodeController {
                 };
 
                 console.log("matric work");
-                  
+
                 var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
                 var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
 
@@ -450,19 +547,20 @@ class CodeController {
                 const d = new Date();
                 let currentDate = d.getDate();
                 if (currentDate == JSON.parse(day)) {
-                    var sql1 = `UPDATE Matrics SET gamezopeTotal = gamezopeTotal + 1`;
+                    var sql1 = `UPDATE Matrics SET gamezopeTotal = gamezopeTotal + 1 ORDER BY id DESC
+                    LIMIT 1 `;
                     var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
                 } else {
-                let addData = await db.Matrics.create({
-                    todayUsers:0,
-                    cashAppTotal:0,
-                    dailyRewardTotal:0,
-                    totalMatchS1:0,
-                    totalMatchS2:0,
-                    totalMatchS3:0,
-                    totalMatch:0,
-                    gamezopeTotal:1
-                  }) 
+                    let addData = await db.Matrics.create({
+                        todayUsers: 0,
+                        cashAppTotal: 0,
+                        dailyRewardTotal: 0,
+                        totalMatchS1: 0,
+                        totalMatchS2: 0,
+                        totalMatchS3: 0,
+                        totalMatch: 0,
+                        gamezopeTotal: 1
+                    })
                 }
 
                 commonController.successMessage(responseData, "Data updated successfully", res);
@@ -563,6 +661,25 @@ class CodeController {
             console.log(e);
         }
     }
+
+    async getMatrics(payload: any, res: Response) {
+        try {
+
+
+            var sql1 = `SELECT * FROM Matrics order by id desc`;
+            console.log(sql1, "query");
+
+            var data = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+            commonController.successMessage(data, "admin login successfully", res);
+            return;
+        } catch (e) {
+            console.log("yes");
+            console.log(e);
+            commonController.errorMessage("Not Found", res);
+        }
+    }
+
+
     async getDeviceId(payload: any, res: Response) {
         try {
             const { deviceId } = payload;
@@ -663,33 +780,33 @@ class CodeController {
         try {
             const { id } = payload;
             console.log(id, "get profile hit now");
-    
+
             // Fetch user data
             var sql = `select a.firstName,a.lastName,a.dob,a.mobileNumber,a.avatar,a.balance,a.totalWinning as totalwinning,
                 a.winMatch as winMatch,a.totalMatch as totalgame,a.firstReward,
                 a.uId,a.active as verify from Users a
                 where a.id = ${id}`;
-    
+
             var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
             console.log(data, "re3s");
-    
+
             // Fetch gamezopArray
             var sql1 = `select gamezopArray from ExtraAdds where id = 1`;
             var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
             console.log(data1, "gzd");
-    
+
             // Add gamezopArray to the user data
             if (data.length > 0 && data1.length > 0) {
                 data[0].firstRewardAmount = parseInt(data1[0].gamezopArray);
             }
-    
+
             commonController.successMessage(data, "user data get successfully", res);
         } catch (e) {
             commonController.errorMessage(e, res);
             console.log(e, "error here");
         }
     }
-    
+
     async getUiInfo(payload: any, res: Response) {
         try {
             const { id, SegId } = payload;
@@ -873,19 +990,34 @@ class CodeController {
 
             // console.log(slots);
             let t = Math.floor(Math.random() * (2000 - 200 + 1) + 200);
+            console.log(t, "totalUsers");
 
-            // Calculate the range for distribution (50 to 60 percent of t)
-            const distributionRange = Math.floor(Math.random() * (60 - 50 + 1) + 50) / 100;
-            const distributionAmount = Math.floor(t * distributionRange);
+            const query1 = `SELECT * FROM OnlineUsers`;
+            const queryres = await MyQuery.query(query1, { type: QueryTypes.SELECT });
+            console.log(queryres[0].onlinePlayer, "11");
+            console.log(queryres[0].s1, "12");
+            console.log(queryres[0].s2, "12");
+            console.log(queryres[0].s3, "12");
 
             // Distribute the amount randomly among the objects
             data.forEach((obj) => {
-                obj.random = 0;
-                obj.random += Math.floor(Math.random() * distributionAmount); // Remove decimal values
+                console.log(obj, "????");
+                if (obj.id == 11) {
+                    obj.random = 0;
+                    obj.random += queryres[0].s1;
+                } else if (obj.id == 12) {
+                    obj.random = 0;
+                    obj.random += queryres[0].s2;
+                } else {
+                    obj.random = 0;
+                    obj.random += queryres[0].s2
+                }
+
+
             });
 
             const onlineUsers = {
-                random: t + 300,
+                random: queryres[0].onlinePlayer,
             };
 
 
@@ -1125,6 +1257,95 @@ class CodeController {
             commonController.errorMessage(e, res)
         }
     }
+    async gmbydate(payload: any, res: Response) {
+        try {
+            const { from, to } = payload;
+
+
+            var sql1 = `SELECT * FROM Matrics WHERE DATE(createdAt) BETWEEN '${to}' AND '${from}'`;
+            var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+
+            commonController.successMessage(data1, "bhupinderjogi", res)
+
+        } catch (e) {
+            commonController.errorMessage(e, res)
+        }
+    }
+    async todaygm(payload: any, res: Response) {
+        try {
+
+
+            var sql1 = `SELECT COUNT(*) AS total FROM Users WHERE DATE(createdAt) = DATE_SUB(CURDATE(), INTERVAL 0 DAY)`;
+            var count = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+
+
+            var sql2 = `SELECT id FROM Users WHERE DATE(createdAt) = DATE_SUB(CURDATE(), INTERVAL 0 DAY)`;
+            var countId = await MyQuery.query(sql2, { type: QueryTypes.SELECT });
+            const idArray = countId.map(item => item.id);
+
+
+
+            const inClause = `(${idArray.join(',')})`;
+            const sql3 = `SELECT COUNT(*) AS rowCount FROM Users WHERE DATE(lastName) = CURDATE() AND id IN ${inClause}`;
+            var rowCountResult = await MyQuery.query(sql3, { type: QueryTypes.SELECT });
+
+
+            const sql4 = `SELECT COUNT(*) AS install$earn FROM Users WHERE DATE(EATime) = CURDATE() AND id IN ${inClause}`;
+            var dailyrew = await MyQuery.query(sql4, { type: QueryTypes.SELECT });
+            console.log(dailyrew[0].install$earn, "conversion");
+
+            const sql5 = `SELECT COUNT(*) AS play$earn FROM Users WHERE gamezopAdd = 1 AND id IN ${inClause}`;
+            var play$earn = await MyQuery.query(sql5, { type: QueryTypes.SELECT });
+
+
+            const sql6 = `SELECT COUNT(*) AS withdraw FROM Withdraws WHERE DATE(createdAt) = CURDATE() AND userId IN ${inClause}`;
+            var withdraw = await MyQuery.query(sql6, { type: QueryTypes.SELECT });
+
+
+            const sql7 = `SELECT COUNT(*) AS s1 FROM Performances WHERE DATE(createdAt) = CURDATE() AND userId IN ${inClause} and gsId = 11`;
+            var s1 = await MyQuery.query(sql7, { type: QueryTypes.SELECT });
+
+
+            const sql8 = `SELECT COUNT(*) AS s2 FROM Performances WHERE DATE(createdAt) = CURDATE() AND userId IN ${inClause} and gsId = 12`;
+            var s2 = await MyQuery.query(sql8, { type: QueryTypes.SELECT });
+
+
+            const sql9 = `SELECT COUNT(*) AS s3 FROM Performances WHERE DATE(createdAt) = CURDATE() AND userId IN ${inClause} and gsId = 13`;
+            var s3 = await MyQuery.query(sql9, { type: QueryTypes.SELECT });
+
+
+
+            let totalMatches = s1[0].s1 + s2[0].s2 + s3[0].s3;
+
+            var data: { todayUsers: any; cashAppTotal: any; dailyRewardTotal: any; gamezopeTotal: any; totalWithdraw: any; totalMatchS1: any; totalMatchS2: any; totalMatchS3: any; totalMatch: any; }[] = [];
+
+            const currentDate = new Date().toISOString();
+            console.log(currentDate);
+
+            let arra = {
+                createdAt: currentDate,
+                todayUsers: count[0].total,
+                cashAppTotal: rowCountResult[0].rowCount,
+                dailyRewardTotal: dailyrew[0].install$earn,
+                gamezopeTotal: play$earn[0].play$earn,
+                totalWithdraw: withdraw[0].withdraw,
+                totalMatchS1: s1[0].s1,
+                totalMatchS2: s2[0].s2,
+                totalMatchS3: s3[0].s3,
+                totalMatch: totalMatches
+            }
+
+            console.log(arra, "asasasa");
+            data.push(arra)
+
+            commonController.successMessage(data, "done", res)
+
+        } catch (e) {
+            console.log(e);
+
+            commonController.errorMessage(e, res)
+        }
+    }
     // widthdraw
     async withDraw(payload: any, res: Response) {
         try {
@@ -1177,6 +1398,39 @@ class CodeController {
                         let minusBalance = checkUser.balance - xn
                         await checkUser.update({ balance: minusBalance })
 
+
+                        // add to matric
+
+                        var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
+                        var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+
+                        let dateObject = new Date(data1[0].createdAt);
+                        let dateString = dateObject.toISOString();
+                        let day = dateString.slice(8, 10);
+                        day = day.replace(/^0/, '');
+                        const d = new Date();
+                        let currentDate = d.getDate();
+
+                        if (currentDate == JSON.parse(day)) {
+                            var sql1 = `UPDATE Matrics SET totalWithdraw = totalWithdraw + 1 ORDER BY id DESC
+                            LIMIT 1 `;
+                            var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+                        } else {
+                            let addData = await db.Matrics.create({
+                                todayUsers: 0,
+                                cashAppTotal: 0,
+                                dailyRewardTotal: 0,
+                                totalMatchS1: 0,
+                                totalMatchS2: 0,
+                                totalMatchS3: 0,
+                                totalMatch: 0,
+                                gamezopeTotal: 0,
+                                totalWithdraw: 1
+                            })
+                        }
+
+
+
                         let addEntry = await db.Withdraws.create({
                             userId: id, money: xn, pamentMethod: 1, totalAmount: amount, paymentMethod, active: 0, transactionId: randomTransactionId // 0 mean pending 1 mean done
                         })
@@ -1191,6 +1445,37 @@ class CodeController {
                     let xn = JSON.parse(amount)
                     let minusBalance = checkUser.balance - xn
                     await checkUser.update({ balance: minusBalance })
+
+
+                    // add to matric
+
+                    var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
+                    var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+
+                    let dateObject = new Date(data1[0].createdAt);
+                    let dateString = dateObject.toISOString();
+                    let day = dateString.slice(8, 10);
+                    day = day.replace(/^0/, '');
+                    const d = new Date();
+                    let currentDate = d.getDate();
+
+                    if (currentDate == JSON.parse(day)) {
+                        var sql1 = `UPDATE Matrics SET totalWithdraw = totalWithdraw + 1 ORDER BY id DESC
+                          LIMIT 1 `;
+                        var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+                    } else {
+                        let addData = await db.Matrics.create({
+                            todayUsers: 0,
+                            cashAppTotal: 0,
+                            dailyRewardTotal: 0,
+                            totalMatchS1: 0,
+                            totalMatchS2: 0,
+                            totalMatchS3: 0,
+                            totalMatch: 0,
+                            gamezopeTotal: 0,
+                            totalWithdraw: 1
+                        })
+                    }
 
                     let addEntry = await db.Withdraws.create({
                         userId: id, money: amount, pamentMethod: 1, totalAmount: amount, paymentMethod, active: 0, transactionId: randomTransactionId // 0 mean pending 1 mean done
@@ -1817,40 +2102,41 @@ class CodeController {
                 // add user to matrix
                 var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
                 var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
-                
-             
-                
+
+
+
                 let dateObject = new Date(data1[0].createdAt);
                 let dateString = dateObject.toISOString();
                 let day = dateString.slice(8, 10);
 
                 day = day.replace(/^0/, '');
-             
-                
+
+
                 const d = new Date();
                 let currentDate = d.getDate();
-              
-    
+
+
                 if (currentDate == JSON.parse(day)) {
-                    var sql1 = `UPDATE Matrics SET todayUsers = todayUsers + 1`;
+                    var sql1 = `UPDATE Matrics SET todayUsers = todayUsers + 1 ORDER BY id DESC
+                    LIMIT 1`;
                     var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
-                
+
                 } else {
-                
-                let addData = await db.Matrics.create({
-                    todayUsers:1,
-                    cashAppTotal:0,
-                    dailyRewardTotal:0,
-                    totalMatchS1:0,
-                    totalMatchS2:0,
-                    totalMatchS3:0,
-                    totalMatch:0,
-                    gamezopeTotal:0
-                  })
-                
+
+                    let addData = await db.Matrics.create({
+                        todayUsers: 1,
+                        cashAppTotal: 0,
+                        dailyRewardTotal: 0,
+                        totalMatchS1: 0,
+                        totalMatchS2: 0,
+                        totalMatchS3: 0,
+                        totalMatch: 0,
+                        gamezopeTotal: 0
+                    })
+
                 }
 
-              
+
                 commonController.successMessage(token, "User Login successfully", res);
             }
 

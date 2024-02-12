@@ -27,6 +27,7 @@ gamezopAdd:number;
 EAActive:boolean;
 EATime:Date;
 firstReward:boolean;
+dailyReward:number;
 
 }
 module.exports = (sequelize:any, DataTypes:any) => {
@@ -56,6 +57,7 @@ module.exports = (sequelize:any, DataTypes:any) => {
 EAActive!:boolean;
 EATime!:Date;
 firstReward!:boolean;
+dailyReward!:number;
     
     /**
      * Helper method for defining associations.
@@ -90,7 +92,8 @@ firstReward!:boolean;
     gamezopAdd:{type:DataTypes.INTEGER},
     EAActive:{type:DataTypes.BOOLEAN},
     EATime:{type:DataTypes.DATE},
-    firstReward:{type:DataTypes.BOOLEAN,defaultValue:0}
+    firstReward:{type:DataTypes.BOOLEAN,defaultValue:0},
+    dailyReward:{type:DataTypes.INTEGER,defaultValue:0}
 
    
  

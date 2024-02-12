@@ -19,7 +19,7 @@ class cronController {
     console.log("payload")
 
     var sql = `UPDATE Users
-        SET gs1 = null, gs2 = null, gs3 = null,EAWatch = null,EATime = null,gamezopAdd = null `;
+        SET gs1 = null, gs2 = null, gs3 = null,EAWatch = null,EATime = null,gamezopAdd = null,dailyReward = 0`;
     console.log(sql, "sql");
     var data = await MyQuery.query(sql, {
       type: QueryTypes.UPDATE
@@ -30,6 +30,49 @@ class cronController {
 
 
   }
+
+
+// Define your onlineUsers function
+async  onlineUsers() {
+  try {
+    // Function to generate random integer between min (inclusive) and max (inclusive)
+    function getRandomInt(min, max){
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Generate random values for OnlineUsers table
+    const onlinePlayer = getRandomInt(1500, 1200);
+    let total = getRandomInt(800, 1000); // Ensuring total starts with a minimum of 600
+    const parts = [];
+    
+    // Distribute remaining total to s1, s2, and s3 ensuring each is at least 200
+    for (let i = 0; i < 2; i++) {
+      const part = getRandomInt(200, total - (400 - i * 200)); // Distribute remaining total ensuring each part is at least 200
+      parts.push(part);
+      total -= part;
+    }
+    parts.push(total); // The last part gets the remaining total
+
+    console.log("onlinePlayer:", onlinePlayer);
+    console.log("s1:", parts[0]);
+    console.log("s2:", parts[1]);
+    console.log("s3:", parts[2]);
+
+    // Update OnlineUsers table
+    const sql = `UPDATE OnlineUsers SET onlinePlayer = ${onlinePlayer}, s1 = ${parts[0]}, s2 = ${parts[1]}, s3 = ${parts[2]}`;
+    var data1 = await MyQuery.query(sql, { type: QueryTypes.UPDATE });
+    console.log('OnlineUsers table updated successfully.');
+
+  } catch (err) {
+    console.error('Error updating database:', err);
+  }
+}
+
+
+
+
+  
+  
   async matrix() {
     try {
      console.log("hit now");
@@ -60,7 +103,7 @@ class cronController {
       });
 
       var sql5 = `SELECT COUNT(*) AS todayRowCount FROM Users
-      WHERE lastName IS NOT NULL AND DATE(createdAt) = CURRENT_DATE and DATE(lastName) = CURRENT_DATE`
+      WHERE lastName IS NOT NULL AND DATE(createdAt) = CURRENT_DATE `
       var cash = await MyQuery.query(sql5, {
         type: QueryTypes.SELECT
       });
@@ -76,16 +119,40 @@ class cronController {
       console.log(a,"total usera");
       // add data to matrix table
 
-      let addData = await db.Matrics.create({
-        todayUsers:data2[0].total,
-        dailyRewardTotal:reward[0].EAWatch,
-        totalMatchS1:gs1[0].gs1,
-        totalMatchS2:gs2[0].gs2,
-        totalMatchS3:gs3[0].gs3,
-        totalMatch:a,
-        gamezopeTotal:gamezop[0].total
-      })
-      console.log("data enter",addData);
+
+      var sql1 = `select createdAt from Matrics  order by id desc limit 1`;
+      var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+
+      let dateObject = new Date(data1[0].createdAt);
+      let dateString = dateObject.toISOString();
+      let day = dateString.slice(8, 10);
+      day = day.replace(/^0/, '');
+      const d = new Date();
+      let currentDate = d.getDate();
+
+      if (currentDate == JSON.parse(day)) {
+              console.log("one");
+
+              let cc  = await db.Matrics.findOne({
+                where:{
+                  id:5
+                }
+              })
+              await cc.update({
+                todayUsers:data2[0].total,
+                cashAppTotal:cash[0].todayRowCount,
+                dailyRewardTotal:reward[0].EAWatch,
+                totalMatchS1:gs1[0].gs1,
+                totalMatchS2:gs2[0].gs2,
+                totalMatchS3:gs3[0].gs3,
+                totalMatch:a,
+                gamezopeTotal:gamezop[0].total
+              })
+      }else{
+        console.log("two");
+      }
+
+     
 
     } catch (e) {
       console.log(e)

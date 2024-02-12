@@ -25,6 +25,7 @@
     "@sendgrid/mail": "^7.4.6",
     "@types/bcryptjs": "^2.4.2",
     "@types/jsonwebtoken": "^8.5.4",
+    "@u4/opencv4nodejs": "^6.5.2",
     "@vonage/server-sdk": "^3.6.0",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",

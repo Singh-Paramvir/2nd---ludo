@@ -272,8 +272,25 @@ class AdminCodeController {
                 var sql = `SELECT * from ExtraAdds `;
                 var data = await MyQuery.query(sql, { type: QueryTypes.SELECT });
                
-               
+                 // Fetch gamezopArray
+            var sql1 = `select gamezopArray from ExtraAdds where id = 1`;
+            var data1 = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
+            console.log(data1, "gzd");
+    
+            // Add gamezopArray to the user data
+            if (data.length > 0 && data1.length > 0) {
+                data[0].firstRewardAmount = parseInt(data1[0].gamezopArray);
+            }
 
+
+
+            // add daily amount
+            var sql2 = `select amount from ExtraAdds where id = 3`;
+            var data2 = await MyQuery.query(sql2, { type: QueryTypes.SELECT });
+            console.log(data1, "gzd");
+            if (data.length > 0 && data1.length > 0) {
+                data[0].dailyRewardAmount = parseInt(data2[0].amount);
+            }
                 commonController.successMessage(data, "Data getting successfully", res)
            
          
@@ -347,7 +364,7 @@ class AdminCodeController {
     
     async ued(payload: any, res: Response) {
         try {
-            const { Id,time,amount,perDay,countDownTime} = payload;
+            const { Id,time,amount,perDay,countDownTime,firstRewardAmount,dailyRewardAmount} = payload;
              console.log(payload,"pattt");
              
              let editData = await db.ExtraAdds.findOne({
@@ -356,6 +373,12 @@ class AdminCodeController {
                 }
              })
              if(editData){
+                var sql1 = `UPDATE ExtraAdds SET gamezopArray = ${firstRewardAmount} where id = 1`;
+                var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+
+                var sql1 = `UPDATE ExtraAdds SET amount = ${dailyRewardAmount} where id = 3`;
+                var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
+
                 await editData.update({ time,amount,perDay,countDownTime})
              }
                 commonController.successMessage(editData, "Data getting successfully", res)
@@ -408,6 +431,22 @@ class AdminCodeController {
     
            
     
+            commonController.successMessage(data, "get successfully", res);
+    
+        } catch (e) {
+            console.log(e);
+            commonController.errorMessage("Not Found", res);
+        }
+    }
+
+    async getMatrics(payload: any, res: Response) {
+        try {
+            const { Id } = payload;
+         
+            var sql1 = `SELECT * FROM Matrics order by id desc`;
+            console.log(sql1,"query");
+            
+            var data = await MyQuery.query(sql1, { type: QueryTypes.SELECT });
             commonController.successMessage(data, "get successfully", res);
     
         } catch (e) {

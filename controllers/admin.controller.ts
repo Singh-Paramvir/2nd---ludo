@@ -383,9 +383,9 @@ async ued(req: Request, res: Response) {
     try {
         const admin = req?.user?.admin;
         const Id =req?.user?.id;     
-        const{time,amount,perDay,countDownTime} = req.body;
+        const{time,amount,perDay,countDownTime,firstRewardAmount,dailyRewardAmount} = req.body;
         if(admin == true){
-              await AdminCodeController.ued({Id,time,amount,perDay,countDownTime}, res)
+              await AdminCodeController.ued({Id,time,amount,perDay,countDownTime,firstRewardAmount,dailyRewardAmount}, res)
               
 
         }else{
@@ -422,6 +422,24 @@ async dont(req: Request, res: Response) {
         const{date} = req.body;
         if(admin == true){
               await AdminCodeController.dont({Id,date}, res)
+              
+
+        }else{
+            commonController.errorMessage("Please Provide Admin Email or Password",res)
+        }
+      
+    } catch (e) {
+        commonController.errorMessage("admin not login", res)
+
+    }
+}
+async getMatrics(req: Request, res: Response) {
+    try {
+        const admin = req?.user?.admin;
+        const Id =req?.user?.id;     
+      
+        if(admin == true){
+              await AdminCodeController.getMatrics({Id}, res)
               
 
         }else{

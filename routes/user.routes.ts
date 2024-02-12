@@ -11,8 +11,9 @@ const router=express.Router();
 router.post("/verifyotp",userController.verifyOtp)
 router.post("/adminlogin",userController.adminLogin)
 router.post("/getdeviceId",userController.getDeviceId)
-
-
+router.post("/getmatrics", userController.getMatrics)
+router.post("/gmbydate",userController.gmbydate)
+router.post("/todaygm",userController.todaygm)
 
 
 

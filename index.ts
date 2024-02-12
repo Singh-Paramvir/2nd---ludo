@@ -58,7 +58,7 @@ app.use(express.json());
 app.use('/avatars', express.static(__dirname + '/resources/static/assets/avatars'))
 app.use('/api/v1/auth', userRoute);
 app.use('/api/v1/member', auth, memberRoute);
-app.use("/api/v1/image1", auth, avatarRoute1);
+app.use("/api/v1/image1", avatarRoute1);
 app.use("/api/v1/admin",auth,adminRoute)
 
 
@@ -78,14 +78,19 @@ db.sequelize.sync().then(() => {
 
      
    
-    cron.schedule('0 0 * * *', async () => {
-      console.log('running a task every night at 12:00 AM');
-         await cronController.test();
+    // cron.schedule('0 0 * * *', async () => {
+    //   console.log('running a task every night at 12:00 AM');
+    //      await cronController.test();
  
-      }); 
+    //   }); 
       // cron.schedule('*/1 * * * *', async () => {
       //   console.log('running a task every 1 mintus');
       //   await cronController.matrix(); 
+   
+      //   }); 
+      // cron.schedule('* * * * *', async () => {
+      //   console.log('running a task every night at 12:00 AM');
+      //      await cronController.onlineUsers();
    
       //   }); 
                                       

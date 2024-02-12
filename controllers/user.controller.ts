@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import e, { Request, Response } from 'express';
 import codeController from './service/code.controller'
 import commonController from './common/common.controller';
 import db from "../models"
@@ -78,6 +78,32 @@ class UserController {
                 console.log(e);
             }    
           } 
+          async useDailyReward(req: Request, res: Response) {
+            try {
+                let id = req?.user?.id;
+              
+              
+                await codeController.useDailyReward({
+                   id
+                }, res)
+            }catch (e) {
+                commonController.errorMessage("user not found", res)
+                console.log(e);
+            }    
+          } 
+          async getDailyReward(req: Request, res: Response) {
+            try {
+                let id = req?.user?.id;
+              
+              
+                await codeController.getDailyReward({
+                   id
+                }, res)
+            }catch (e) {
+                commonController.errorMessage("user not found", res)
+                console.log(e);
+            }    
+          } 
           async gamezop(req: Request, res: Response) {
             try {
                 let id = req?.user?.id;
@@ -134,6 +160,35 @@ class UserController {
 
         }
     }
+    async gmbydate(req: Request, res: Response) {
+        try {
+           const{from,to}=req.body;
+        
+            await codeController.gmbydate({
+                from,to
+            }, res)
+        
+          
+        } catch (e) {
+            commonController.successMessage({},"user not found", res)
+            console.log(e);
+
+        }
+    }
+    async todaygm(req: Request, res: Response) {
+        try {
+           
+        
+            await codeController.todaygm({
+            }, res)
+        
+          
+        } catch (e) {
+            commonController.successMessage({},"user not found", res)
+            console.log(e);
+
+        }
+    }
     async verifyOtp(req: Request, res: Response) {
         try {
            const{mobileNumber,otp}=req.body;
@@ -177,6 +232,23 @@ class UserController {
             console.log(e);
         }    
         } 
+
+
+        async getMatrics(req: Request, res: Response) {
+            try {
+                  
+              
+           
+                      await codeController.getMatrics({}, res)
+                    commonController.errorMessage("Please Provide Admin Email or Password",res)
+               
+              
+            } catch (e) {
+                commonController.errorMessage("admin not login", res)
+        
+            }
+        }
+     
         async checkUser(req: Request, res: Response) {
             try {
                 let id = req?.user?.id;
@@ -305,17 +377,21 @@ class UserController {
              let currentDate = d.getDate();
              if (currentDate == JSON.parse(day)) {
 
-                 var sql1 = `UPDATE Matrics SET totalMatch = totalMatch + 1`;
+                 var sql1 = `UPDATE Matrics SET totalMatch = totalMatch + 1 ORDER BY id DESC
+                 LIMIT 1`;
                  var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
 
                  if(gsId == 11){
-                    var sql1 = `UPDATE Matrics SET totalMatchS1 = totalMatchS1 + 1`;
+                    var sql1 = `UPDATE Matrics SET totalMatchS1 = totalMatchS1 + 1 ORDER BY id DESC
+                    LIMIT 1`;
                     var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
                  }else if(gsId == 12){
-                    var sql1 = `UPDATE Matrics SET totalMatchS2 = totalMatchS2 + 1`;
+                    var sql1 = `UPDATE Matrics SET totalMatchS2 = totalMatchS2 + 1 ORDER BY id DESC
+                    LIMIT 1`;
                     var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
                  }else if(gsId == 13){
-                    var sql1 = `UPDATE Matrics SET totalMatchS3 = totalMatchS3 + 1`;
+                    var sql1 = `UPDATE Matrics SET totalMatchS3 = totalMatchS3 + 1 ORDER BY id DESC
+                    LIMIT 1`;
                     var data1 = await MyQuery.query(sql1, { type: QueryTypes.UPDATE });
                  }
              } else {

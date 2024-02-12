@@ -34,6 +34,7 @@ router.post("/dont", AdminController.dont)
 
 router.post("/getlinks", AdminController.getlinks)
 router.post("/updatelinks", AdminController.updatelinks)
+
 // notification push api
 router.post("/sendtoall", AdminController.sendToAll)
 export default router;  
